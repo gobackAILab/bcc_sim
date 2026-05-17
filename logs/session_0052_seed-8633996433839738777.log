@@ -1,0 +1,190 @@
+=== Session 52 ===
+Seed: 8633996433839738777
+Initial: 100,000원  Target: 500,000원  Ruin: 50,000원  Table-max: 100,000원
+Strategy: martingale (pivot, steps=5)
+Base bet: 1,000원  Primary side: BANKER
+
+H001 | bet   1,000원 BANKER | P:5♣ 10♦=5  B:7♠ A♣=8  BANKER(W)  | +950원 → 100,950원
+H002 | bet   1,000원 BANKER | P:6♦ 7♣ K♦=3  B:K♥ A♦ 2♥=3  TIE(T)  |     0원 → 100,950원
+H003 | bet   1,000원 BANKER | P:9♥ 10♦=9  B:4♠ 4♥=8  PLAYER(L)  | -1,000원 → 99,950원  [start]
+H004 | bet   2,000원 PLAYER | P:6♦ 9♥ J♠=5  B:5♠ 2♠=7  BANKER(L)  | -2,000원 → 97,950원
+H005 | bet   4,000원 PLAYER | P:A♦ J♣ Q♠=1  B:5♠ J♦=5  BANKER(L)  | -4,000원 → 93,950원
+H006 | bet   8,000원 PLAYER | P:9♣ 9♦=8  B:6♦ 8♦=4  PLAYER(W)  | +8,000원 → 101,950원  [end_win]
+H007 | bet   1,000원 BANKER | P:9♦ 6♥ 7♦=2  B:10♠ Q♦ 8♥=8  BANKER(W)  | +950원 → 102,900원
+H008 | bet   1,000원 BANKER | P:8♥ 9♦=7  B:2♣ J♣ 6♠=8  BANKER(W)  | +950원 → 103,850원
+H009 | bet   1,000원 BANKER | P:2♦ Q♣ J♣=2  B:K♣ 7♦=7  BANKER(W)  | +950원 → 104,800원
+H010 | bet   1,000원 BANKER | P:2♦ 6♠=8  B:K♦ 3♦=3  PLAYER(L)  | -1,000원 → 103,800원  [start]
+H011 | bet   2,000원 PLAYER | P:5♦ 8♣ 2♠=5  B:2♦ K♠ 6♦=8  BANKER(L)  | -2,000원 → 101,800원
+H012 | bet   4,000원 PLAYER | P:8♣ 9♠=7  B:6♥ A♠=7  TIE(T)  |     0원 → 101,800원
+H013 | bet   4,000원 PLAYER | P:K♦ 9♦=9  B:7♣ 4♣=1  PLAYER(W)  | +4,000원 → 105,800원  [end_win]
+H014 | bet   1,000원 BANKER | P:J♦ 8♠=8  B:J♥ 8♥=8  TIE(T)  |     0원 → 105,800원
+H015 | bet   1,000원 BANKER | P:K♥ K♠=0  B:9♠ 10♠=9  BANKER(W)  | +950원 → 106,750원
+H016 | bet   1,000원 BANKER | P:2♠ 9♥ 8♥=9  B:8♦ 9♣=7  PLAYER(L)  | -1,000원 → 105,750원  [start]
+H017 | bet   2,000원 PLAYER | P:4♣ 4♦=8  B:A♠ K♠=1  PLAYER(W)  | +2,000원 → 107,750원  [end_win]
+H018 | bet   1,000원 BANKER | P:7♣ 4♣ 5♠=6  B:5♦ 6♣ 9♣=0  PLAYER(L)  | -1,000원 → 106,750원  [start]
+H019 | bet   2,000원 PLAYER | P:A♠ A♥ 5♦=7  B:5♠ 8♥ 8♥=1  PLAYER(W)  | +2,000원 → 108,750원  [end_win]
+H020 | bet   1,000원 BANKER | P:A♣ A♦ 7♥=9  B:J♥ 4♣ Q♦=4  PLAYER(L)  | -1,000원 → 107,750원  [start]
+H021 | bet   2,000원 PLAYER | P:3♦ 2♦ Q♣=5  B:J♥ Q♥ 4♣=4  PLAYER(W)  | +2,000원 → 109,750원  [end_win]
+H022 | bet   1,000원 BANKER | P:6♣ 7♥ 10♦=3  B:5♦ K♦=5  BANKER(W)  | +950원 → 110,700원
+H023 | bet   1,000원 BANKER | P:K♣ 7♦=7  B:9♣ 3♦ 9♠=1  PLAYER(L)  | -1,000원 → 109,700원  [start]
+H024 | bet   2,000원 PLAYER | P:5♦ 3♠=8  B:4♣ 5♥=9  BANKER(L)  | -2,000원 → 107,700원
+H025 | bet   4,000원 PLAYER | P:5♣ 8♣ 8♦=1  B:Q♦ 4♠=4  BANKER(L)  | -4,000원 → 103,700원
+H026 | bet   8,000원 PLAYER | P:4♠ 3♣=7  B:3♣ 3♥=6  PLAYER(W)  | +8,000원 → 111,700원  [end_win]
+H027 | bet   1,000원 BANKER | P:4♠ 6♣ K♠=0  B:5♥ K♣=5  BANKER(W)  | +950원 → 112,650원
+H028 | bet   1,000원 BANKER | P:9♦ 8♣=7  B:J♦ J♣ A♦=1  PLAYER(L)  | -1,000원 → 111,650원  [start]
+H029 | bet   2,000원 PLAYER | P:10♥ 6♣=6  B:5♣ 2♦=7  BANKER(L)  | -2,000원 → 109,650원
+H030 | bet   4,000원 PLAYER | P:3♠ 2♣ 4♥=9  B:J♦ 2♥ A♠=3  PLAYER(W)  | +4,000원 → 113,650원  [end_win]
+H031 | bet   1,000원 BANKER | P:7♠ 6♦ K♦=3  B:5♥ 5♠ 2♥=2  PLAYER(L)  | -1,000원 → 112,650원  [start]
+H032 | bet   2,000원 PLAYER | P:4♦ J♦ 6♣=0  B:10♠ J♥ 3♣=3  BANKER(L)  | -2,000원 → 110,650원
+H033 | bet   4,000원 PLAYER | P:Q♥ 4♠ 9♥=3  B:A♠ Q♦ Q♠=1  PLAYER(W)  | +4,000원 → 114,650원  [end_win]
+H034 | bet   1,000원 BANKER | P:9♣ 3♦=2  B:J♦ 8♠=8  BANKER(W)  | +950원 → 115,600원
+H035 | bet   1,000원 BANKER | P:3♥ Q♥ 2♦=5  B:A♥ Q♥ 7♠=8  BANKER(W)  | +950원 → 116,550원
+H036 | bet   1,000원 BANKER | P:A♠ Q♦ 2♥=3  B:Q♠ 10♠ J♥=0  PLAYER(L)  | -1,000원 → 115,550원  [start]
+H037 | bet   2,000원 PLAYER | P:Q♥ 9♥=9  B:8♠ 5♠=3  PLAYER(W)  | +2,000원 → 117,550원  [end_win]
+H038 | bet   1,000원 BANKER | P:10♥ 3♠ 7♠=0  B:Q♥ 4♥ 10♦=4  BANKER(W)  | +950원 → 118,500원
+H039 | bet   1,000원 BANKER | P:4♦ 8♣ 6♠=8  B:7♠ 5♥ 10♥=2  PLAYER(L)  | -1,000원 → 117,500원  [start]
+H040 | bet   2,000원 PLAYER | P:4♣ Q♣=4  B:8♣ 10♠=8  BANKER(L)  | -2,000원 → 115,500원
+H041 | bet   4,000원 PLAYER | P:9♦ 8♦=7  B:5♥ J♥ 3♥=8  BANKER(L)  | -4,000원 → 111,500원
+H042 | bet   8,000원 PLAYER | P:K♥ A♥ 8♦=9  B:7♣ K♥=7  PLAYER(W)  | +8,000원 → 119,500원  [end_win]
+H043 | bet   1,000원 BANKER | P:10♠ A♥ 6♥=7  B:J♣ 10♠ 5♥=5  PLAYER(L)  | -1,000원 → 118,500원  [start]
+H044 | bet   2,000원 PLAYER | P:K♣ Q♠ 9♠=9  B:5♦ 7♥ A♣=3  PLAYER(W)  | +2,000원 → 120,500원  [end_win]
+H045 | bet   1,000원 BANKER | P:7♥ Q♠=7  B:2♣ 6♠=8  BANKER(W)  | +950원 → 121,450원
+H046 | bet   1,000원 BANKER | P:Q♥ 6♥=6  B:9♦ 3♦ 2♥=4  PLAYER(L)  | -1,000원 → 120,450원  [start]
+H047 | bet   2,000원 PLAYER | P:2♣ 7♦=9  B:10♦ 6♠=6  PLAYER(W)  | +2,000원 → 122,450원  [end_win]
+H048 | bet   1,000원 BANKER | P:9♠ 2♥ A♣=2  B:2♥ A♣ 5♣=8  BANKER(W)  | +950원 → 123,400원
+H049 | bet   1,000원 BANKER | P:6♣ 3♥=9  B:8♣ A♥=9  TIE(T)  |     0원 → 123,400원
+H050 | bet   1,000원 BANKER | P:4♦ 3♠=7  B:7♣ J♣=7  TIE(T)  |     0원 → 123,400원
+H051 | bet   1,000원 BANKER | P:J♠ K♥ 3♣=3  B:A♣ Q♥ 4♥=5  BANKER(W)  | +950원 → 124,350원
+H052 | bet   1,000원 BANKER | P:4♥ K♠ 8♠=2  B:J♠ 2♠ K♦=2  TIE(T)  |     0원 → 124,350원
+H053 | bet   1,000원 BANKER | P:9♦ 10♣=9  B:4♠ 7♣=1  PLAYER(L)  | -1,000원 → 123,350원  [start]
+H054 | bet   2,000원 PLAYER | P:K♣ J♠ J♠=0  B:2♣ K♣ K♥=2  BANKER(L)  | -2,000원 → 121,350원
+H055 | bet   4,000원 PLAYER | P:A♦ 4♥=5  B:4♦ 4♦=8  BANKER(L)  | -4,000원 → 117,350원
+H056 | bet   8,000원 PLAYER | P:7♥ J♣=7  B:10♥ 8♠=8  BANKER(L)  | -8,000원 → 109,350원
+H057 | bet  16,000원 PLAYER | P:5♦ 10♣ 7♥=2  B:2♦ 5♠=7  BANKER(L)  | -16,000원 → 93,350원
+H058 | bet  32,000원 PLAYER | P:3♣ 4♠=7  B:4♥ K♣ A♠=5  PLAYER(W)  | +32,000원 → 125,350원  [end_win]
+H059 | bet   1,000원 BANKER | P:3♠ J♠ 10♥=3  B:10♣ 10♣ 8♦=8  BANKER(W)  | +950원 → 126,300원
+H060 | bet   1,000원 BANKER | P:10♥ 7♦=7  B:6♦ 2♣=8  BANKER(W)  | +950원 → 127,250원
+H061 | bet   1,000원 BANKER | P:7♣ Q♣=7  B:5♣ 6♦ J♠=1  PLAYER(L)  | -1,000원 → 126,250원  [start]
+H062 | bet   2,000원 PLAYER | P:K♥ 7♦=7  B:Q♣ J♦ 6♥=6  PLAYER(W)  | +2,000원 → 128,250원  [end_win]
+H063 | bet   1,000원 BANKER | P:Q♠ 5♥ 8♥=3  B:4♦ 3♥=7  BANKER(W)  | +950원 → 129,200원
+H064 | bet   1,000원 BANKER | P:K♠ 9♣=9  B:4♦ 3♥=7  PLAYER(L)  | -1,000원 → 128,200원  [start]
+H065 | bet   2,000원 PLAYER | P:A♥ 10♣ A♣=2  B:A♥ A♣ A♦=3  BANKER(L)  | -2,000원 → 126,200원
+H066 | bet   4,000원 PLAYER | P:7♠ 9♠=6  B:Q♦ 3♣ 2♣=5  PLAYER(W)  | +4,000원 → 130,200원  [end_win]
+H067 | bet   1,000원 BANKER | P:10♣ 8♥=8  B:5♠ 6♥=1  PLAYER(L)  | -1,000원 → 129,200원  [start]
+H068 | bet   2,000원 PLAYER | P:J♠ 9♣=9  B:A♦ J♥=1  PLAYER(W)  | +2,000원 → 131,200원  [end_win]
+H069 | bet   1,000원 BANKER | P:5♥ 7♦ 10♥=2  B:9♥ 3♠ 9♥=1  PLAYER(L)  | -1,000원 → 130,200원  [start]
+H070 | bet   2,000원 PLAYER | P:8♠ 3♣ K♥=1  B:Q♣ 4♠=4  BANKER(L)  | -2,000원 → 128,200원
+H071 | bet   4,000원 PLAYER | P:9♥ A♠ 5♣=5  B:6♣ K♦=6  BANKER(L)  | -4,000원 → 124,200원
+H072 | bet   8,000원 PLAYER | P:3♣ K♦ 6♥=9  B:3♥ Q♣ J♦=3  PLAYER(W)  | +8,000원 → 132,200원  [end_win]
+H073 | bet   1,000원 BANKER | P:7♠ 5♦ 9♠=1  B:4♣ K♣=4  BANKER(W)  | +950원 → 133,150원
+H074 | bet   1,000원 BANKER | P:6♠ 2♠=8  B:10♣ 6♦=6  PLAYER(L)  | -1,000원 → 132,150원  [start]
+H075 | bet   2,000원 PLAYER | P:K♠ 3♥ Q♦=3  B:2♣ 8♦ 5♣=5  BANKER(L)  | -2,000원 → 130,150원
+H076 | bet   4,000원 PLAYER | P:2♠ 3♦ 10♣=5  B:10♦ 4♥=4  PLAYER(W)  | +4,000원 → 134,150원  [end_win]
+H077 | bet   1,000원 BANKER | P:3♠ 7♣ 2♠=2  B:5♣ Q♠=5  BANKER(W)  | +950원 → 135,100원
+H078 | bet   1,000원 BANKER | P:9♣ 2♠ J♣=1  B:6♠ 6♣ 8♠=0  PLAYER(L)  | -1,000원 → 134,100원  [start]
+H079 | bet   2,000원 PLAYER | P:3♠ 7♠ A♦=1  B:Q♦ 3♦ 10♥=3  BANKER(L)  | -2,000원 → 132,100원
+H080 | bet   4,000원 PLAYER | P:K♠ Q♣ 8♠=8  B:A♥ J♥ Q♠=1  PLAYER(W)  | +4,000원 → 136,100원  [end_win]
+H081 | bet   1,000원 BANKER | P:7♠ K♦=7  B:2♦ J♦ 6♦=8  BANKER(W)  | +950원 → 137,050원
+H082 | bet   1,000원 BANKER | P:6♣ 2♣=8  B:J♣ 2♣=2  PLAYER(L)  | -1,000원 → 136,050원  [start]
+H083 | bet   2,000원 PLAYER | P:8♠ 9♦=7  B:K♣ 9♥=9  BANKER(L)  | -2,000원 → 134,050원
+H084 | bet   4,000원 PLAYER | P:10♦ 4♦ 7♦=1  B:6♠ 10♣ K♠=6  BANKER(L)  | -4,000원 → 130,050원
+H085 | bet   8,000원 PLAYER | P:7♣ 3♠ 3♣=3  B:Q♠ A♥ 9♥=0  PLAYER(W)  | +8,000원 → 138,050원  [end_win]
+H086 | bet   1,000원 BANKER | P:8♦ 2♠ Q♥=0  B:10♥ 6♥=6  BANKER(W)  | +950원 → 139,000원
+H087 | bet   1,000원 BANKER | P:6♥ 6♣ A♦=3  B:J♥ A♥ 8♠=9  BANKER(W)  | +950원 → 139,950원
+H088 | bet   1,000원 BANKER | P:3♣ A♠ 3♣=7  B:3♥ A♠ 2♥=6  PLAYER(L)  | -1,000원 → 138,950원  [start]
+H089 | bet   2,000원 PLAYER | P:9♥ 7♣=6  B:K♠ 6♠=6  TIE(T)  |     0원 → 138,950원
+H090 | bet   2,000원 PLAYER | P:A♥ 9♠ 9♣=9  B:Q♠ 4♦=4  PLAYER(W)  | +2,000원 → 140,950원  [end_win]
+H091 | bet   1,000원 BANKER | P:J♠ 7♦=7  B:10♦ J♠ 3♥=3  PLAYER(L)  | -1,000원 → 139,950원  [start]
+H092 | bet   2,000원 PLAYER | P:A♣ 7♥=8  B:2♠ 7♥=9  BANKER(L)  | -2,000원 → 137,950원
+H093 | bet   4,000원 PLAYER | P:7♦ K♦=7  B:5♦ 3♠=8  BANKER(L)  | -4,000원 → 133,950원
+H094 | bet   8,000원 PLAYER | P:A♣ K♦ 9♣=0  B:A♥ Q♣ A♦=2  BANKER(L)  | -8,000원 → 125,950원
+H095 | bet  16,000원 PLAYER | P:Q♦ 7♣=7  B:3♦ J♣ 6♠=9  BANKER(L)  | -16,000원 → 109,950원
+H096 | bet  32,000원 PLAYER | P:K♣ 10♥ 3♦=3  B:J♦ 2♥ 9♠=1  PLAYER(W)  | +32,000원 → 141,950원  [end_win]
+H097 | bet   1,000원 BANKER | P:6♠ A♦=7  B:6♠ Q♠=6  PLAYER(L)  | -1,000원 → 140,950원  [start]
+H098 | bet   2,000원 PLAYER | P:9♦ Q♠=9  B:7♥ J♠=7  PLAYER(W)  | +2,000원 → 142,950원  [end_win]
+H099 | bet   1,000원 BANKER | P:9♥ K♥=9  B:Q♣ 5♦=5  PLAYER(L)  | -1,000원 → 141,950원  [start]
+H100 | bet   2,000원 PLAYER | P:7♠ 5♠ K♣=2  B:4♦ Q♥=4  BANKER(L)  | -2,000원 → 139,950원
+H101 | bet   4,000원 PLAYER | P:9♦ 10♦=9  B:10♣ 5♦=5  PLAYER(W)  | +4,000원 → 143,950원  [end_win]
+H102 | bet   1,000원 BANKER | P:A♠ Q♣=1  B:9♣ J♦=9  BANKER(W)  | +950원 → 144,900원
+H103 | bet   1,000원 BANKER | P:7♥ 4♠ 3♣=4  B:4♥ A♣=5  BANKER(W)  | +950원 → 145,850원
+H104 | bet   1,000원 BANKER | P:7♥ 9♥=6  B:8♠ K♥=8  BANKER(W)  | +950원 → 146,800원
+H105 | bet   1,000원 BANKER | P:4♠ 3♦=7  B:5♣ Q♦ Q♣=5  PLAYER(L)  | -1,000원 → 145,800원  [start]
+H106 | bet   2,000원 PLAYER | P:8♥ 6♣ J♠=4  B:A♠ 4♦=5  BANKER(L)  | -2,000원 → 143,800원
+H107 | bet   4,000원 PLAYER | P:3♥ 10♦ 4♦=7  B:7♦ 6♦ 4♣=7  TIE(T)  |     0원 → 143,800원
+H108 | bet   4,000원 PLAYER | P:3♥ 10♦=3  B:9♣ Q♠=9  BANKER(L)  | -4,000원 → 139,800원
+H109 | bet   8,000원 PLAYER | P:4♣ 8♥=2  B:9♦ J♠=9  BANKER(L)  | -8,000원 → 131,800원
+H110 | bet  16,000원 PLAYER | P:2♦ 6♠=8  B:10♣ K♥=0  PLAYER(W)  | +16,000원 → 147,800원  [end_win]
+H111 | bet   1,000원 BANKER | P:A♦ 2♦ 3♣=6  B:6♥ 8♦ K♣=4  PLAYER(L)  | -1,000원 → 146,800원  [start]
+H112 | bet   2,000원 PLAYER | P:A♦ 4♥ 2♥=7  B:2♦ 5♦=7  TIE(T)  |     0원 → 146,800원
+H113 | bet   2,000원 PLAYER | P:2♦ 2♣=4  B:4♥ 5♥=9  BANKER(L)  | -2,000원 → 144,800원
+H114 | bet   4,000원 PLAYER | P:2♣ 3♣=5  B:6♥ 3♠=9  BANKER(L)  | -4,000원 → 140,800원
+H115 | bet   8,000원 PLAYER | P:K♠ 3♥ 4♦=7  B:6♦ Q♥=6  PLAYER(W)  | +8,000원 → 148,800원  [end_win]
+H116 | bet   1,000원 BANKER | P:8♠ 8♣=6  B:9♦ 8♦=7  BANKER(W)  | +950원 → 149,750원
+H117 | bet   1,000원 BANKER | P:8♠ 3♠ 2♦=3  B:7♠ 6♣ K♦=3  TIE(T)  |     0원 → 149,750원
+H118 | bet   1,000원 BANKER | P:K♦ 8♣=8  B:K♥ 5♠=5  PLAYER(L)  | -1,000원 → 148,750원  [start]
+H119 | bet   2,000원 PLAYER | P:8♣ 2♥ 7♣=7  B:9♣ 8♣=7  TIE(T)  |     0원 → 148,750원
+H120 | bet   2,000원 PLAYER | P:9♣ J♥=9  B:5♥ 8♥=3  PLAYER(W)  | +2,000원 → 150,750원  [end_win]
+H121 | bet   1,000원 BANKER | P:10♦ 5♣ 6♦=1  B:5♣ 2♥=7  BANKER(W)  | +950원 → 151,700원
+H122 | bet   1,000원 BANKER | P:5♥ 7♠ J♦=2  B:3♠ 7♠ 7♣=7  BANKER(W)  | +950원 → 152,650원
+H123 | bet   1,000원 BANKER | P:3♦ 10♦ 10♠=3  B:K♥ 6♣=6  BANKER(W)  | +950원 → 153,600원
+H124 | bet   1,000원 BANKER | P:8♠ 9♠=7  B:Q♠ K♣ A♠=1  PLAYER(L)  | -1,000원 → 152,600원  [start]
+H125 | bet   2,000원 PLAYER | P:J♥ 2♣ 9♥=1  B:7♠ 7♥=4  BANKER(L)  | -2,000원 → 150,600원
+H126 | bet   4,000원 PLAYER | P:6♠ 4♥=0  B:Q♣ 9♦=9  BANKER(L)  | -4,000원 → 146,600원
+H127 | bet   8,000원 PLAYER | P:9♣ 5♥ 2♥=6  B:10♠ 7♣=7  BANKER(L)  | -8,000원 → 138,600원
+H128 | bet  16,000원 PLAYER | P:4♣ 8♠ J♥=2  B:K♣ Q♥ 7♦=7  BANKER(L)  | -16,000원 → 122,600원
+H129 | bet  32,000원 PLAYER | P:2♠ 9♥ A♦=2  B:2♠ A♥ 2♣=5  BANKER(L)  | -32,000원 → 90,600원  [end_giveup]
+H130 | bet   1,000원 BANKER | P:3♦ A♠ 10♥=4  B:8♦ 6♦=4  TIE(T)  |     0원 → 90,600원
+H131 | bet   1,000원 BANKER | P:K♦ 3♦ K♥=3  B:Q♦ 4♣=4  BANKER(W)  | +950원 → 91,550원
+H132 | bet   1,000원 BANKER | P:5♠ K♥ 10♥=5  B:J♦ A♣ A♦=2  PLAYER(L)  | -1,000원 → 90,550원  [start]
+H133 | bet   2,000원 PLAYER | P:Q♦ 4♦ 5♦=9  B:J♣ 4♥ 6♣=0  PLAYER(W)  | +2,000원 → 92,550원  [end_win]
+H134 | bet   1,000원 BANKER | P:8♣ 2♥=0  B:4♥ 5♣=9  BANKER(W)  | +950원 → 93,500원
+H135 | bet   1,000원 BANKER | P:4♠ 5♣=9  B:Q♥ 3♥=3  PLAYER(L)  | -1,000원 → 92,500원  [start]
+H136 | bet   2,000원 PLAYER | P:J♣ 10♠=0  B:10♠ 8♣=8  BANKER(L)  | -2,000원 → 90,500원
+H137 | bet   4,000원 PLAYER | P:J♣ 3♠ 8♥=1  B:K♠ 2♠ 7♣=9  BANKER(L)  | -4,000원 → 86,500원
+H138 | bet   8,000원 PLAYER | P:J♦ 10♥ 10♠=0  B:5♥ J♠=5  BANKER(L)  | -8,000원 → 78,500원
+H139 | bet  16,000원 PLAYER | P:J♥ J♦ 5♣=5  B:5♠ 8♣ 10♣=3  PLAYER(W)  | +16,000원 → 94,500원  [end_win]
+H140 | bet   1,000원 BANKER | P:J♥ 4♣ Q♠=4  B:4♥ Q♣=4  TIE(T)  |     0원 → 94,500원
+H141 | bet   1,000원 BANKER | P:6♣ 8♥ 4♣=8  B:K♦ 3♣ 9♠=2  PLAYER(L)  | -1,000원 → 93,500원  [start]
+H142 | bet   2,000원 PLAYER | P:J♣ K♠ Q♥=0  B:10♣ K♠ 7♥=7  BANKER(L)  | -2,000원 → 91,500원
+H143 | bet   4,000원 PLAYER | P:K♣ K♦ 9♠=9  B:8♥ 9♦=7  PLAYER(W)  | +4,000원 → 95,500원  [end_win]
+H144 | bet   1,000원 BANKER | P:4♦ 10♠ 4♠=8  B:9♦ 7♣=6  PLAYER(L)  | -1,000원 → 94,500원  [start]
+H145 | bet   2,000원 PLAYER | P:5♠ A♥=6  B:8♦ A♦=9  BANKER(L)  | -2,000원 → 92,500원
+H146 | bet   4,000원 PLAYER | P:Q♦ 2♠ 6♦=8  B:8♠ 4♠ A♣=3  PLAYER(W)  | +4,000원 → 96,500원  [end_win]
+H147 | bet   1,000원 BANKER | P:5♥ A♣=6  B:5♥ 3♦=8  BANKER(W)  | +950원 → 97,450원
+H148 | bet   1,000원 BANKER | P:J♥ 2♠ 8♥=0  B:9♠ 2♠ 4♠=5  BANKER(W)  | +950원 → 98,400원
+H149 | bet   1,000원 BANKER | P:Q♦ 6♣=6  B:7♠ 10♥=7  BANKER(W)  | +950원 → 99,350원
+H150 | bet   1,000원 BANKER | P:K♥ 3♥ 5♠=8  B:7♥ 10♠=7  PLAYER(L)  | -1,000원 → 98,350원  [start]
+H151 | bet   2,000원 PLAYER | P:K♣ 3♣ 8♦=1  B:10♥ 7♦=7  BANKER(L)  | -2,000원 → 96,350원
+H152 | bet   4,000원 PLAYER | P:6♠ A♠=7  B:4♠ J♦ 3♥=7  TIE(T)  |     0원 → 96,350원
+H153 | bet   4,000원 PLAYER | P:Q♦ A♣ 2♥=3  B:8♦ 4♠ J♣=2  PLAYER(W)  | +4,000원 → 100,350원  [end_win]
+H154 | bet   1,000원 BANKER | P:8♥ A♣=9  B:7♦ 5♠=2  PLAYER(L)  | -1,000원 → 99,350원  [start]
+H155 | bet   2,000원 PLAYER | P:5♦ A♠=6  B:4♥ 10♣ 9♣=3  PLAYER(W)  | +2,000원 → 101,350원  [end_win]
+H156 | bet   1,000원 BANKER | P:6♦ 2♣=8  B:10♣ K♠=0  PLAYER(L)  | -1,000원 → 100,350원  [start]
+H157 | bet   2,000원 PLAYER | P:Q♦ 5♠ 5♣=0  B:5♣ 10♣ K♠=5  BANKER(L)  | -2,000원 → 98,350원
+H158 | bet   4,000원 PLAYER | P:Q♣ 4♣ 10♥=4  B:3♦ A♥=4  TIE(T)  |     0원 → 98,350원
+H159 | bet   4,000원 PLAYER | P:2♦ 2♣ Q♣=4  B:10♦ 3♠ 7♠=0  PLAYER(W)  | +4,000원 → 102,350원  [end_win]
+H160 | bet   1,000원 BANKER | P:5♥ 10♠ A♥=6  B:5♦ J♠=5  PLAYER(L)  | -1,000원 → 101,350원  [start]
+H161 | bet   2,000원 PLAYER | P:9♠ 5♦=4  B:8♦ J♠=8  BANKER(L)  | -2,000원 → 99,350원
+H162 | bet   4,000원 PLAYER | P:4♣ 9♥ 6♥=9  B:7♦ 6♥ 6♥=9  TIE(T)  |     0원 → 99,350원
+H163 | bet   4,000원 PLAYER | P:J♣ 2♣ 10♠=2  B:5♣ Q♣=5  BANKER(L)  | -4,000원 → 95,350원
+H164 | bet   8,000원 PLAYER | P:10♦ 6♦=6  B:3♣ Q♥ 2♦=5  PLAYER(W)  | +8,000원 → 103,350원  [end_win]
+H165 | bet   1,000원 BANKER | P:4♦ 3♣=7  B:Q♥ 9♠=9  BANKER(W)  | +950원 → 104,300원
+H166 | bet   1,000원 BANKER | P:3♥ K♠ 4♠=7  B:10♠ 6♥=6  PLAYER(L)  | -1,000원 → 103,300원  [start]
+H167 | bet   2,000원 PLAYER | P:2♥ 10♥ 4♦=6  B:5♦ 8♠ 3♦=6  TIE(T)  |     0원 → 103,300원
+H168 | bet   2,000원 PLAYER | P:7♥ 8♦ 6♣=1  B:8♣ 7♦ 3♥=8  BANKER(L)  | -2,000원 → 101,300원
+H169 | bet   4,000원 PLAYER | P:K♠ A♦ 5♣=6  B:3♠ K♠ 2♥=5  PLAYER(W)  | +4,000원 → 105,300원  [end_win]
+H170 | bet   1,000원 BANKER | P:K♣ 6♣=6  B:2♦ 10♦ K♣=2  PLAYER(L)  | -1,000원 → 104,300원  [start]
+H171 | bet   2,000원 PLAYER | P:8♦ A♥=9  B:J♣ 9♠=9  TIE(T)  |     0원 → 104,300원
+H172 | bet   2,000원 PLAYER | P:K♠ 4♣ 3♠=7  B:4♠ 6♣ 5♥=5  PLAYER(W)  | +2,000원 → 106,300원  [end_win]
+H173 | bet   1,000원 BANKER | P:9♥ 10♥=9  B:K♣ 2♥=2  PLAYER(L)  | -1,000원 → 105,300원  [start]
+H174 | bet   2,000원 PLAYER | P:J♦ K♠ 7♦=7  B:6♥ Q♣ A♣=7  TIE(T)  |     0원 → 105,300원
+H175 | bet   2,000원 PLAYER | P:5♥ 4♣=9  B:K♥ 7♣=7  PLAYER(W)  | +2,000원 → 107,300원  [end_win]
+H176 | bet   1,000원 BANKER | P:Q♣ 8♥=8  B:3♦ 8♦=1  PLAYER(L)  | -1,000원 → 106,300원  [start]
+H177 | bet   2,000원 PLAYER | P:5♦ 2♥=7  B:5♠ 4♥=9  BANKER(L)  | -2,000원 → 104,300원
+H178 | bet   4,000원 PLAYER | P:4♠ 6♦ A♦=1  B:5♥ 5♦ 3♥=3  BANKER(L)  | -4,000원 → 100,300원
+H179 | bet   8,000원 PLAYER | P:4♣ 7♣ A♣=2  B:J♣ 4♠=4  BANKER(L)  | -8,000원 → 92,300원
+H180 | bet  16,000원 PLAYER | P:5♠ 6♥ J♦=1  B:9♥ 7♥=6  BANKER(L)  | -16,000원 → 76,300원
+H181 | bet  32,000원 PLAYER | P:6♠ 10♣=6  B:4♦ 3♦=7  BANKER(L)  | -32,000원 → 44,300원  [end_giveup]
+
+Result: RUIN (capital_depleted)
+Final: 44,300원  Hands: 181  Bets: 162  Wagered: 582,000원  Max losing streak: 6

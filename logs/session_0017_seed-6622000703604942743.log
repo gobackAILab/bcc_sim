@@ -1,0 +1,32 @@
+=== Session 17 ===
+Seed: 6622000703604942743
+Initial: 100,000원  Target: 500,000원  Ruin: 50,000원  Table-max: 100,000원
+Strategy: martingale (pivot, steps=4)
+Base bet: 1,000원  Primary side: BANKER
+
+H001 | bet   1,000원 BANKER | P:7♥ 4♥ 7♥=8  B:A♠ 5♠ 9♣=5  PLAYER(L)  | -1,000원 → 99,000원  [start]
+H002 | bet   2,000원 PLAYER | P:Q♠ 10♦ Q♠=0  B:2♥ 10♥ 10♠=2  BANKER(L)  | -2,000원 → 97,000원
+H003 | bet   4,000원 PLAYER | P:Q♥ 8♣=8  B:8♣ 9♦=7  PLAYER(W)  | +4,000원 → 101,000원  [end_win]
+H004 | bet   1,000원 BANKER | P:3♠ 8♦=1  B:8♠ Q♦=8  BANKER(W)  | +950원 → 101,950원
+H005 | bet   1,000원 BANKER | P:K♦ 6♥=6  B:Q♣ Q♥ Q♦=0  PLAYER(L)  | -1,000원 → 100,950원  [start]
+H006 | bet   2,000원 PLAYER | P:2♥ 9♦ 8♠=9  B:A♣ A♠ 3♦=5  PLAYER(W)  | +2,000원 → 102,950원  [end_win]
+H007 | bet   1,000원 BANKER | P:10♣ 6♥=6  B:Q♦ 2♣ A♦=3  PLAYER(L)  | -1,000원 → 101,950원  [start]
+H008 | bet   2,000원 PLAYER | P:K♣ 10♣ 5♣=5  B:K♠ 6♣=6  BANKER(L)  | -2,000원 → 99,950원
+H009 | bet   4,000원 PLAYER | P:5♣ 8♣=3  B:5♥ 3♥=8  BANKER(L)  | -4,000원 → 95,950원
+H010 | bet   8,000원 PLAYER | P:7♠ 8♠=5  B:J♥ 9♣=9  BANKER(L)  | -8,000원 → 87,950원
+H011 | bet  16,000원 PLAYER | P:2♥ 8♠ K♥=0  B:K♣ 3♠ A♥=4  BANKER(L)  | -16,000원 → 71,950원  [end_giveup]
+H012 | bet   1,000원 BANKER | P:9♥ 5♥=4  B:K♠ 9♥=9  BANKER(W)  | +950원 → 72,900원
+H013 | bet   1,000원 BANKER | P:5♦ 7♣ 4♥=6  B:10♦ 3♦ J♣=3  PLAYER(L)  | -1,000원 → 71,900원  [start]
+H014 | bet   2,000원 PLAYER | P:3♣ Q♣ 2♠=5  B:J♦ 10♣ 7♦=7  BANKER(L)  | -2,000원 → 69,900원
+H015 | bet   4,000원 PLAYER | P:10♣ 6♠=6  B:3♥ 8♦ 7♠=8  BANKER(L)  | -4,000원 → 65,900원
+H016 | bet   8,000원 PLAYER | P:4♠ 4♣=8  B:9♠ 4♠=3  PLAYER(W)  | +8,000원 → 73,900원  [end_win]
+H017 | bet   1,000원 BANKER | P:3♥ 8♥=1  B:K♥ 8♣=8  BANKER(W)  | +950원 → 74,850원
+H018 | bet   1,000원 BANKER | P:9♣ 10♣=9  B:A♣ 2♠=3  PLAYER(L)  | -1,000원 → 73,850원  [start]
+H019 | bet   2,000원 PLAYER | P:2♣ 3♣ 5♦=0  B:J♥ 6♣=6  BANKER(L)  | -2,000원 → 71,850원
+H020 | bet   4,000원 PLAYER | P:7♣ 8♥ 10♦=5  B:5♦ 10♠=5  TIE(T)  |     0원 → 71,850원
+H021 | bet   4,000원 PLAYER | P:8♥ 6♦ 7♣=1  B:J♥ 5♣ 10♥=5  BANKER(L)  | -4,000원 → 67,850원
+H022 | bet   8,000원 PLAYER | P:4♦ 6♦=0  B:9♦ K♦=9  BANKER(L)  | -8,000원 → 59,850원
+H023 | bet  16,000원 PLAYER | P:9♥ 5♠ J♥=4  B:7♠ 3♣ 7♠=7  BANKER(L)  | -16,000원 → 43,850원  [end_giveup]
+
+Result: RUIN (capital_depleted)
+Final: 43,850원  Hands: 23  Bets: 22  Wagered: 90,000원  Max losing streak: 5

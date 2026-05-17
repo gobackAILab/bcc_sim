@@ -1,0 +1,19 @@
+[project]
+name = "bcc-sim"
+version = "0.1.0"
+description = "Add your description here"
+readme = "readme.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.136.1",
+    "matplotlib>=3.10.9",
+    "numpy>=2.4.5",
+    "tqdm>=4.67.3",
+    "uvicorn[standard]>=0.47.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.3",
+]

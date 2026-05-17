@@ -1,0 +1,24 @@
+=== Session 53 ===
+Seed: 4637771848169556393
+Initial: 100,000원  Target: 500,000원  Ruin: 50,000원  Table-max: 100,000원
+Strategy: martingale (pivot, steps=5)
+Base bet: 1,000원  Primary side: BANKER
+
+H001 | bet   1,000원 BANKER | P:A♣ 7♠=8  B:7♠ 2♣=9  BANKER(W)  | +950원 → 100,950원
+H002 | bet   1,000원 BANKER | P:6♦ 9♠ Q♦=5  B:4♦ 3♥=7  BANKER(W)  | +950원 → 101,900원
+H003 | bet   1,000원 BANKER | P:5♥ 6♠ 9♣=0  B:K♣ 2♣ 8♠=0  TIE(T)  |     0원 → 101,900원
+H004 | bet   1,000원 BANKER | P:4♦ 7♥ J♥=1  B:5♣ A♣=6  BANKER(W)  | +950원 → 102,850원
+H005 | bet   1,000원 BANKER | P:J♦ 4♥=4  B:9♣ J♣=9  BANKER(W)  | +950원 → 103,800원
+H006 | bet   1,000원 BANKER | P:8♠ 5♣ K♦=3  B:7♦ 7♣=4  BANKER(W)  | +950원 → 104,750원
+H007 | bet   1,000원 BANKER | P:9♠ 3♣ 10♣=2  B:J♠ 2♠ A♥=3  BANKER(W)  | +950원 → 105,700원
+H008 | bet   1,000원 BANKER | P:A♥ A♠ 9♥=1  B:J♣ 2♦ 6♣=8  BANKER(W)  | +950원 → 106,650원
+H009 | bet   1,000원 BANKER | P:8♥ Q♣=8  B:8♥ A♦=9  BANKER(W)  | +950원 → 107,600원
+H010 | bet   1,000원 BANKER | P:5♠ 4♣=9  B:4♦ 8♦=2  PLAYER(L)  | -1,000원 → 106,600원  [start]
+H011 | bet   2,000원 PLAYER | P:3♣ 9♣ 8♠=0  B:4♣ K♦=4  BANKER(L)  | -2,000원 → 104,600원
+H012 | bet   4,000원 PLAYER | P:2♠ 4♣=6  B:Q♦ 7♣=7  BANKER(L)  | -4,000원 → 100,600원
+H013 | bet   8,000원 PLAYER | P:10♠ 6♠=6  B:3♦ 7♦ 8♣=8  BANKER(L)  | -8,000원 → 92,600원
+H014 | bet  16,000원 PLAYER | P:6♠ J♣=6  B:5♣ J♠ 3♥=8  BANKER(L)  | -16,000원 → 76,600원
+H015 | bet  32,000원 PLAYER | P:J♦ 3♠=3  B:9♦ Q♣=9  BANKER(L)  | -32,000원 → 44,600원  [end_giveup]
+
+Result: RUIN (capital_depleted)
+Final: 44,600원  Hands: 15  Bets: 14  Wagered: 71,000원  Max losing streak: 6

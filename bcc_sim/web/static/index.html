@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>bcc-sim · 바카라 마틴게일 시뮬레이터</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+
+  <aside id="settings-panel" aria-label="설정">
+    <header class="panel-header">
+      <h2>⚙ Settings</h2>
+      <button type="button" id="toggle-panel" class="icon-btn" title="패널 접기">«</button>
+    </header>
+    <form id="config-form">
+
+      <fieldset>
+        <legend>전략</legend>
+        <label class="radio"><input type="radio" name="strategy_name" value="flat"> flat</label>
+        <label class="radio"><input type="radio" name="strategy_name" value="martingale" checked> martingale</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Primary Side</legend>
+        <label class="radio"><input type="radio" name="side" value="BANKER" checked> banker</label>
+        <label class="radio"><input type="radio" name="side" value="PLAYER"> player</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>자본 (원)</legend>
+        <label>initial<input type="number" name="initial_won" min="1" step="1000"></label>
+        <label>target<input type="number" name="target_won" min="1" step="1000"></label>
+        <label>ruin<input type="number" name="ruin_won" min="0" step="1000"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>베팅 (원)</legend>
+        <label>base-bet<input type="number" name="base_bet_won" min="1" step="100"></label>
+        <label>table-max<input type="number" name="table_max_won" min="1" step="1000"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>마틴게일</legend>
+        <label>steps<input type="number" name="martin_steps" min="1" max="20"></label>
+        <label class="checkbox"><input type="checkbox" name="pivot"> pivot</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>슈</legend>
+        <label>decks<input type="number" name="n_decks" min="1" max="16"></label>
+        <label>cut-offset<input type="number" name="cut_offset" min="0" max="200"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>진행</legend>
+        <label>delay (ms)<input type="number" name="hand_delay_ms" min="0" max="5000" step="50"></label>
+        <label class="checkbox"><input type="checkbox" name="auto_next"> auto next</label>
+        <label>seed<input type="number" name="seed"></label>
+      </fieldset>
+
+      <button type="submit" id="start-btn" class="primary-btn">▶ Apply &amp; Start</button>
+    </form>
+  </aside>
+
+  <main id="dashboard">
+
+    <header class="dashboard-header">
+      <button type="button" id="show-panel" class="icon-btn" hidden title="패널 열기">»</button>
+      <h1>바카라 마틴게일 시뮬레이터</h1>
+      <span id="connection" class="badge offline">offline</span>
+    </header>
+
+    <section class="card-panel" id="gauge-section">
+      <div id="gauge-bar">
+        <div id="gauge-fill"></div>
+        <div id="gauge-marker" title="시작 자본"></div>
+      </div>
+      <div id="gauge-labels">
+        <span class="g-left">ruin <em id="g-ruin">-</em></span>
+        <span class="g-center">initial <em id="g-initial">-</em></span>
+        <span class="g-right">target <em id="g-target">-</em></span>
+      </div>
+    </section>
+
+    <section class="card-panel" id="capital-section">
+      <div class="row big">
+        <span class="label">현재 자본</span>
+        <span class="value mono" id="capital">-</span>
+        <span class="muted mono" id="session-pnl"></span>
+      </div>
+      <div class="row">
+        <span class="label">누적 손익</span>
+        <span class="value mono" id="cumulative-pnl">0원</span>
+        <span class="muted mono" id="cumulative-detail"></span>
+      </div>
+    </section>
+
+    <section class="card-panel" id="current-hand">
+      <div class="row title">
+        <span>현재 핸드 <strong id="hand-num">-</strong></span>
+        <span id="martin-event" class="martin-tag"></span>
+      </div>
+      <div class="row">
+        <span class="label">베팅</span>
+        <span class="value" id="bet-side">-</span>
+        <span class="value mono" id="bet-amount">-</span>
+      </div>
+      <div class="row cards-row">
+        <span class="label side-label player-label">Player</span>
+        <span class="cards mono" id="player-cards"></span>
+        <span class="total mono">= <strong id="player-total">-</strong></span>
+      </div>
+      <div class="row cards-row">
+        <span class="label side-label banker-label">Banker</span>
+        <span class="cards mono" id="banker-cards"></span>
+        <span class="total mono">= <strong id="banker-total">-</strong></span>
+      </div>
+      <div class="row">
+        <span class="label">결과</span>
+        <span class="value" id="hand-outcome">-</span>
+        <span class="value mono" id="hand-delta"></span>
+      </div>
+    </section>
+
+    <section class="card-panel" id="recent-section">
+      <h3>최근 핸드</h3>
+      <ol id="recent-list" class="mono"></ol>
+    </section>
+
+    <section class="card-panel" id="session-stats">
+      <div class="row">
+        <span class="label">세션</span>
+        <span class="value">#<span id="session-num">-</span></span>
+        <span class="muted">시드 <span id="session-seed" class="mono">-</span></span>
+      </div>
+      <div class="row">
+        <span class="label">진행</span>
+        <span class="value mono">핸드 <span id="stat-hands">0</span> · 베팅 <span id="stat-bets">0</span> · 최장연패 <span id="stat-streak">0</span></span>
+      </div>
+      <div class="row">
+        <span class="label">누계</span>
+        <span class="value mono">승 <span id="cum-wins">0</span> · 파산 <span id="cum-ruins">0</span> · 진행 <span id="cum-sessions">0</span></span>
+      </div>
+    </section>
+
+    <section class="card-panel" id="controls">
+      <button type="button" id="pause-btn" disabled>⏸ Pause</button>
+      <button type="button" id="resume-btn" disabled>▶ Resume</button>
+      <button type="button" id="next-btn" disabled>⏭ Next Session</button>
+      <button type="button" id="stop-btn" disabled>⏹ Stop</button>
+    </section>
+
+    <div id="error-banner" hidden></div>
+  </main>
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
