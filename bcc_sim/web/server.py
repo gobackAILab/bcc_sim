@@ -6,6 +6,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from .. import __version__
 from .serialize import DEFAULT_CONFIG
 from .session_runner import run_play_socket
 
@@ -14,12 +15,16 @@ _STATIC_DIR = Path(__file__).parent / "static"
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="bcc-sim web", version="0.1.0")
+    app = FastAPI(title="bcc-sim web", version=__version__)
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
     @app.get("/")
     async def index() -> FileResponse:
         return FileResponse(_STATIC_DIR / "index.html")
+
+    @app.get("/api/version")
+    async def version() -> dict:
+        return {"version": __version__, "name": "bcc-sim"}
 
     @app.get("/api/defaults")
     async def defaults() -> dict:

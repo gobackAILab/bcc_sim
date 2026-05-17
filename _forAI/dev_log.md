@@ -14,6 +14,10 @@
   - [누적 P&L 표시](#누적-pl-표시)
   - [Phase 9 — 웹 인터페이스](#phase-9--웹-인터페이스)
   - [사용자 가이드 + _forAI 갱신](#사용자-가이드--_forai-갱신)
+  - [웹 UI NES.css 픽셀 스타일 개편 (21:00)](#웹-ui-nescss-픽셀-스타일-개편-2100)
+  - [number input step 검증 버그 수정 (21:10)](#number-input-step-검증-버그-수정-2110)
+  - [시뮬레이션 속도 + 체감시간 표시 (21:20)](#시뮬레이션-속도--체감시간-표시-2120)
+  - [PM2 등록 + 버전 단일 출처 (21:30)](#pm2-등록--버전-단일-출처-2130)
 
 ## 2026-05-17
 
@@ -165,3 +169,44 @@ CLI 와 웹 모두 `_derive_session_seeds(master, n)` + `run_session_traced` 사
 - `_forAI/inventory.md`: 웹 모듈 7개 추가, 테스트 표에 2개 행 추가, 새 의존성 명시, Web usage 섹션 신설
 - `_forAI/plan.md`: Phase 9 ✅ 추가, Structure decisions 에 웹 관련 결정 5개 추가, 차후 작업 후보에 웹 항목 추가
 - `_forAI/memo.md`: "웹 인터페이스" 섹션 신설 (설계 결정, WebSocket actions 표, 누적 P&L 위치, 카드 색), "반복 금지" 4개 항목 추가 (DEFAULT_CONFIG 수동 동기, `asyncio.sleep(delay)` 무조건 호출, 폼 3군데 동기, `--mode web` 만들지 말기)
+
+### 웹 UI NES.css 픽셀 스타일 개편 (21:00)
+
+사용자 요청 ("NES.css 써서 전면적으로 웹 ui수정해주세요" → "다크말고 밝게" → SNES 컨트롤러 이미지 첨부, "이런 느낌으로" → "흰색배경"):
+
+- [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html): NES.css 2.3.0 + IBM Plex Sans/Mono KR + Press Start 2P 폰트 CDN 로드. `<fieldset>` → `nes-container with-title is-rounded`, input → `nes-input`, radio/checkbox → `nes-radio`/`nes-checkbox`, 버튼 → `nes-btn is-primary/success/warning/error`, badge → `nes-badge`. 기존 id/구조는 유지(app.js 무수정).
+- [bcc_sim/web/static/style.css](../bcc_sim/web/static/style.css): SNES 본체-회색 시도 → 사용자 피드백 따라 흰 배경(`#ffffff`) + 사이드바만 살짝 어두운 톤. SNES 4버튼 색(red/blue/green/yellow)을 컨트롤 버튼과 라벨/타이틀 색에 매핑. 게이지/카드/martin-tag 픽셀 보더 + 그림자.
+- 결정: PM2 status 표시 가능 여부와 별개로, NES.css 자체는 라이트 테마가 기본이므로 흰 배경에서 가장 안정적. 다크 시도는 NES.css `is-dark` 변종이 일부 컴포넌트만 지원해서 폐기.
+
+### number input step 검증 버그 수정 (21:10)
+
+사용자 보고 ("초기값에 10만원 넣었는데 왜 거부되지요?" + 스크린샷 "가장 근접한 유효 값 2개는 99001 및 100001"):
+
+- 원인: [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html) 의 `<input type="number" min="1" step="1000">` 조합 — 브라우저 native 검증이 step 의 배수만 허용해 `min=1` 기준에서 100,000(=999.999스텝)이 무효 처리됨. `/api/defaults` 의 모든 기본값이 사실상 폼 검증을 통과 못 하는 상태였음.
+- 사용자 요청 ("스텝 컨트롤 빼주세요"): 자본/베팅 5개 필드(`initial_won`, `target_won`, `ruin_won`, `base_bet_won`, `table_max_won`)에서 `step` 속성 모두 제거. `hand_delay_ms` 의 `step="50"` 은 ms 단위로 자연스러워 유지.
+
+### 시뮬레이션 속도 + 체감시간 표시 (21:20)
+
+사용자 요청 ("웹 ui 에서 하는 시뮬레이션 속도를 높일수있을까요? 그리고 한게임을 40초 잡고 실제 경과시간도 표시해주세요"):
+
+- [bcc_sim/web/serialize.py](../bcc_sim/web/serialize.py): `DEFAULT_CONFIG["hand_delay_ms"]` 300 → 0 으로 변경 (이후 사용자가 50 으로 미세 조정). `asyncio.sleep(0)` 시 이벤트 루프 yield 만 하므로 메시지/DOM 갱신 속도까지 풀어줌.
+- [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html): 통계 패널에 "체감"(이번 세션) / "누계체감"(전체) 행 2개 추가.
+- [bcc_sim/web/static/app.js](../bcc_sim/web/static/app.js):
+  - `SECONDS_PER_HAND = 40` 상수 (실제 카지노 1핸드 ≈ 40초 환산).
+  - `fmtRealTime(seconds)` — 일/시간/분/초 단계적 포맷 (`1일 3시간`, `45분 20초`).
+  - `state.cumulativeHands` 추적 (session_end 의 `result.hands_played` 누적).
+  - 매 핸드/세션 종료 시 `updateRealtimeStats()` 호출.
+
+### PM2 등록 + 버전 단일 출처 (21:30)
+
+사용자 요청 ("pm2 로 등록 시키는 스크립트 만들어주세요. 포트는 21037" → "버전 표시 해주세요. 버전 관리를 변수하나로도 가능 — 달로스는 그런식인듯" → 마지막 정리 "억지로 하실필요는 없습니다"):
+
+- 신규 [ecosystem.config.cjs](../ecosystem.config.cjs): pm2 앱 `bcc-sim-web`, cwd=`/home/agent01/works/bcc_sim`, script=`/home/agent01/.local/bin/uv`(절대경로 — pm2 데몬 PATH 차이 회피), args=`run python -m bcc_sim.web --host 0.0.0.0 --port 21037`, `interpreter: "none"`, logs=`./logs/pm2-{out,err}.log`, `autorestart: true`, `max_restarts: 10`.
+- 신규 [pm2-start.sh](../pm2-start.sh) / [pm2-stop.sh](../pm2-stop.sh): 등록·기동·정지 헬퍼.
+- **버전 단일 출처**: `pyproject.toml` 의 `version = "0.1.0"` 하나만 고치면 어디서나 반영되도록 구성.
+  - [bcc_sim/__init__.py](../bcc_sim/__init__.py): `importlib.metadata.version("bcc-sim")` 시도 → 실패 시 `tomllib` 로 `pyproject.toml` 직접 파싱 fallback. `uv sync` 가 본 패키지를 dist-info 로 설치하지 않는 환경에서도 동작.
+  - [bcc_sim/web/server.py](../bcc_sim/web/server.py): `GET /api/version` → `{"version": __version__, "name": "bcc-sim"}`, FastAPI 앱 자체 version 도 `__version__`.
+  - [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html) 헤더에 `<span id="app-version">` 배지, [bcc_sim/web/static/app.js](../bcc_sim/web/static/app.js) 가 `/api/version` 받아 표시.
+  - [ecosystem.config.cjs](../ecosystem.config.cjs): `pyproject.toml` 정규식 파싱해 `BCC_SIM_VERSION` 환경변수로 노출.
+- **PM2 status `version` 컬럼**: 외부 바이너리를 script 로 호출하는 경우 PM2 가 cwd 의 `package.json` 을 자동 감지하지 않음 (dalus_server 처럼 `.js` script 일 때만 작동). Node wrapper(`run.cjs`)로 우회 가능함은 확인했으나, 사용자 판단으로 wrapper 는 폐기하고 `N/A` 그대로 두기로 결정. UI/API/env 만으로 충분.
+- 사고 기록: 작업 중 `pm2 kill` 실행 — daemon 전체가 죽어 dalus-server / dap3d-backend 도 함께 정지. `/home/agent01/.pm2/dump.pm2.bak` 에서 `cp ... dump.pm2 && pm2 resurrect` 로 복구. **이후 pm2 daemon 전체 영향 명령은 반드시 사전 확인할 것**.

@@ -4,15 +4,15 @@
 
   const RECENT_MAX = 12;
   const RED_SUITS = new Set(["H", "D"]);
+  const SECONDS_PER_HAND = 40;  // 한 핸드 = 카지노 40초 환산
 
   const $ = (id) => document.getElementById(id);
   const el = {
     form: $("config-form"),
+    applyBtn: $("apply-btn"),
     startBtn: $("start-btn"),
     pauseBtn: $("pause-btn"),
-    resumeBtn: $("resume-btn"),
     nextBtn: $("next-btn"),
-    stopBtn: $("stop-btn"),
     togglePanel: $("toggle-panel"),
     showPanel: $("show-panel"),
     app: $("app"),
@@ -48,9 +48,11 @@
     statHands: $("stat-hands"),
     statBets: $("stat-bets"),
     statStreak: $("stat-streak"),
+    statRealtime: $("stat-realtime"),
     cumWins: $("cum-wins"),
     cumRuins: $("cum-ruins"),
     cumSessions: $("cum-sessions"),
+    cumRealtime: $("cum-realtime"),
   };
 
   const state = {
@@ -60,13 +62,61 @@
     sessionPnlNow: 0,
     paused: false,
     running: false,
+    sessionActive: false,
     sessionRecent: [],
     sessionHands: 0,
     sessionBets: 0,
     sessionStreak: 0,
     sessionStreakMax: 0,
     cumulativePrev: 0,  // pnl before current session for the detail line
+    cumulativeHands: 0, // 누적 핸드 (체감 시간 계산용)
+    appliedConfig: null,
+    configDirty: false,
   };
+
+  // ───────── time helpers ─────────
+  function fmtRealTime(totalSeconds) {
+    if (!totalSeconds || totalSeconds <= 0) return "0초";
+    const s = Math.floor(totalSeconds);
+    const days = Math.floor(s / 86400);
+    const hours = Math.floor((s % 86400) / 3600);
+    const mins = Math.floor((s % 3600) / 60);
+    const secs = s % 60;
+    const parts = [];
+    if (days > 0) parts.push(`${days}일`);
+    if (hours > 0) parts.push(`${hours}시간`);
+    if (mins > 0 && days === 0) parts.push(`${mins}분`);
+    if (secs > 0 && days === 0 && hours === 0) parts.push(`${secs}초`);
+    return parts.join(" ") || "0초";
+  }
+  function updateRealtimeStats() {
+    if (el.statRealtime) el.statRealtime.textContent = fmtRealTime(state.sessionHands * SECONDS_PER_HAND);
+    if (el.cumRealtime) {
+      const total = (state.cumulativeHands + state.sessionHands) * SECONDS_PER_HAND;
+      el.cumRealtime.textContent = fmtRealTime(total);
+    }
+  }
+
+  function initNumberInputs() {
+    const navigationKeys = new Set([
+      "Backspace", "Delete", "Tab", "Enter", "Escape", "Home", "End",
+      "ArrowLeft", "ArrowRight",
+    ]);
+    for (const input of el.form.querySelectorAll('input[type="number"]')) {
+      input.inputMode = "numeric";
+      input.autocomplete = "off";
+      input.addEventListener("keydown", (ev) => {
+        if (ev.ctrlKey || ev.metaKey || navigationKeys.has(ev.key)) return;
+        if (!/^\d$/.test(ev.key)) ev.preventDefault();
+      });
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "");
+      });
+      input.addEventListener("wheel", (ev) => {
+        if (document.activeElement === input) ev.preventDefault();
+      }, { passive: false });
+    }
+  }
 
   // ───────── form ↔ config ─────────
   async function loadDefaults() {
@@ -84,6 +134,7 @@
         else i.value = v == null ? "" : v;
       }
     }
+    applyConfig();
   }
 
   function readConfig() {
@@ -101,6 +152,30 @@
     ];
     for (const k of intKeys) if (data[k] !== undefined && data[k] !== "") data[k] = parseInt(data[k], 10);
     return data;
+  }
+
+  function markConfigDirty() {
+    state.configDirty = true;
+    el.applyBtn.textContent = "Apply *";
+    el.applyBtn.classList.remove("is-primary");
+    el.applyBtn.classList.add("is-warning");
+  }
+
+  function applyConfig() {
+    const cfg = readConfig();
+    state.appliedConfig = cfg;
+    state.configDirty = false;
+    el.applyBtn.textContent = "Apply";
+    el.applyBtn.classList.remove("is-warning");
+    el.applyBtn.classList.add("is-primary");
+
+    if (Number.isFinite(cfg.initial_won) && Number.isFinite(cfg.target_won) && Number.isFinite(cfg.ruin_won)) {
+      state.config = cfg;
+      renderGaugeStatic(cfg);
+      renderCapital(cfg.initial_won);
+      renderCumulative();
+    }
+    return cfg;
   }
 
   // ───────── rendering ─────────
@@ -228,6 +303,7 @@
     el.statHands.textContent = String(state.sessionHands);
     el.statBets.textContent = String(state.sessionBets);
     el.statStreak.textContent = String(state.sessionStreakMax);
+    updateRealtimeStats();
 
     appendRecent(rec, outcomeCls);
     renderCumulative();
@@ -263,6 +339,7 @@
     el.statHands.textContent = "0";
     el.statBets.textContent = "0";
     el.statStreak.textContent = "0";
+    if (el.statRealtime) el.statRealtime.textContent = "0초";
     el.handNum.textContent = "-";
     el.martinEvent.textContent = "";
     el.betSide.textContent = "-";
@@ -280,8 +357,8 @@
 
   // ───────── WebSocket ─────────
   function setConnection(status) {
-    el.conn.textContent = status;
-    el.conn.className = `badge ${status}`;
+    el.conn.className = `nes-badge ${status}`;
+    el.conn.replaceChildren(Object.assign(document.createElement("span"), { textContent: status }));
   }
   function showError(msg) {
     el.errorBanner.textContent = msg;
@@ -289,42 +366,92 @@
   }
   function clearError() { el.errorBanner.hidden = true; el.errorBanner.textContent = ""; }
 
+  function setRunButton(mode) {
+    el.startBtn.classList.remove("is-success", "is-error", "is-warning");
+    if (mode === "stop") {
+      el.startBtn.textContent = "⏹ Stop";
+      el.startBtn.classList.add("is-error");
+      el.startBtn.disabled = false;
+    } else if (mode === "connecting") {
+      el.startBtn.textContent = "Connecting";
+      el.startBtn.classList.add("is-warning");
+      el.startBtn.disabled = true;
+    } else {
+      el.startBtn.textContent = "▶ Start";
+      el.startBtn.classList.add("is-success");
+      el.startBtn.disabled = false;
+    }
+  }
+
+  function setPauseButton(mode) {
+    el.pauseBtn.classList.remove("is-warning", "is-primary");
+    if (mode === "resume") {
+      el.pauseBtn.textContent = "▶ Resume";
+      el.pauseBtn.classList.add("is-primary");
+      el.pauseBtn.disabled = false;
+    } else {
+      el.pauseBtn.textContent = "⏸ Pause";
+      el.pauseBtn.classList.add("is-warning");
+      el.pauseBtn.disabled = mode === "disabled";
+    }
+  }
+
   function setControlsForRun() {
-    el.startBtn.disabled = true;
-    el.pauseBtn.disabled = false;
-    el.resumeBtn.disabled = true;
+    el.applyBtn.disabled = true;
+    setRunButton("stop");
+    setPauseButton(state.paused ? "resume" : "pause");
     el.nextBtn.disabled = true;
-    el.stopBtn.disabled = false;
+  }
+  function setControlsForStarting() {
+    el.applyBtn.disabled = true;
+    setRunButton("stop");
+    state.paused = false;
+    state.sessionActive = false;
+    setPauseButton("disabled");
+    el.nextBtn.disabled = true;
   }
   function setControlsForIdle() {
-    el.startBtn.disabled = false;
-    el.pauseBtn.disabled = true;
-    el.resumeBtn.disabled = true;
+    el.applyBtn.disabled = false;
+    setRunButton("start");
+    state.paused = false;
+    state.sessionActive = false;
+    setPauseButton("disabled");
     el.nextBtn.disabled = true;
-    el.stopBtn.disabled = true;
   }
   function setControlsForSessionEnd() {
-    el.pauseBtn.disabled = true;
-    el.resumeBtn.disabled = true;
+    el.applyBtn.disabled = true;
+    setRunButton("stop");
+    state.paused = false;
+    state.sessionActive = false;
+    setPauseButton("disabled");
     el.nextBtn.disabled = false;
-    el.stopBtn.disabled = false;
   }
 
   function startWs() {
     clearError();
-    const cfg = readConfig();
+    if (state.configDirty) {
+      showError("변경한 설정을 먼저 Apply 해주세요.");
+      return;
+    }
+    const cfg = state.appliedConfig || applyConfig();
+    el.applyBtn.disabled = true;
+    setRunButton("connecting");
+    setPauseButton("disabled");
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
     const ws = new WebSocket(`${proto}//${location.host}/ws/play`);
     state.ws = ws;
     state.cumulative = null;
     state.cumulativePrev = 0;
+    state.cumulativeHands = 0;
     state.running = true;
     state.paused = false;
+    state.sessionActive = false;
+    if (el.cumRealtime) el.cumRealtime.textContent = "0초";
 
     ws.addEventListener("open", () => {
       setConnection("online");
       ws.send(JSON.stringify({ action: "start", config: cfg }));
-      setControlsForRun();
+      setControlsForStarting();
     });
 
     ws.addEventListener("message", (ev) => {
@@ -364,6 +491,8 @@
 
       case "session_start":
         resetSessionView();
+        state.sessionActive = true;
+        state.paused = false;
         el.sessionNum.textContent = String(msg.session_num);
         el.sessionSeed.textContent = String(msg.seed);
         if (msg.config) {
@@ -382,6 +511,12 @@
         state.cumulative = msg.cumulative;
         // session_pnl already baked into cumulative — clear "this session" component
         state.sessionPnlNow = 0;
+        if (msg.result && typeof msg.result.hands_played === "number") {
+          state.cumulativeHands += msg.result.hands_played;
+        } else {
+          state.cumulativeHands += state.sessionHands;
+        }
+        updateRealtimeStats();
         el.sessionPnl.textContent = `(이번 세션 ${fmtSignedWon(msg.session_pnl)} · ${msg.result.outcome})`;
         renderCumulative();
         setControlsForSessionEnd();
@@ -401,42 +536,70 @@
   el.form.addEventListener("submit", (ev) => {
     ev.preventDefault();
     if (state.ws) {
-      try { state.ws.close(); } catch (e) {}
+      showError("실행 중에는 설정을 적용할 수 없습니다. 먼저 Stop 해주세요.");
+      return;
+    }
+    clearError();
+    applyConfig();
+  });
+
+  el.form.addEventListener("input", markConfigDirty);
+  el.form.addEventListener("change", markConfigDirty);
+
+  el.startBtn.addEventListener("click", () => {
+    if (state.ws) {
+      send("stop");
+      el.startBtn.disabled = true;
+      return;
     }
     startWs();
   });
 
   el.pauseBtn.addEventListener("click", () => {
-    send("pause");
-    state.paused = true;
-    el.pauseBtn.disabled = true;
-    el.resumeBtn.disabled = false;
-    setConnection("paused");
-  });
-  el.resumeBtn.addEventListener("click", () => {
-    send("resume");
-    state.paused = false;
-    el.pauseBtn.disabled = false;
-    el.resumeBtn.disabled = true;
-    setConnection("online");
+    if (!state.ws || !state.sessionActive) return;
+    if (state.paused) {
+      send("resume");
+      state.paused = false;
+      setPauseButton("pause");
+      setConnection("online");
+    } else {
+      send("pause");
+      state.paused = true;
+      setPauseButton("resume");
+      setConnection("paused");
+    }
   });
   el.nextBtn.addEventListener("click", () => {
+    state.paused = false;
+    state.sessionActive = false;
     send("next_session");
-    setControlsForRun();
-  });
-  el.stopBtn.addEventListener("click", () => {
-    send("stop");
-    el.stopBtn.disabled = true;
+    setControlsForStarting();
   });
 
   el.togglePanel.addEventListener("click", () => {
     el.app.classList.add("panel-collapsed");
     el.showPanel.hidden = false;
+    el.togglePanel.setAttribute("aria-expanded", "false");
+    el.showPanel.setAttribute("aria-expanded", "false");
+    requestAnimationFrame(() => el.showPanel.focus({ preventScroll: true }));
   });
   el.showPanel.addEventListener("click", () => {
     el.app.classList.remove("panel-collapsed");
     el.showPanel.hidden = true;
+    el.togglePanel.setAttribute("aria-expanded", "true");
+    el.showPanel.setAttribute("aria-expanded", "true");
+    requestAnimationFrame(() => el.togglePanel.focus({ preventScroll: true }));
   });
 
+  initNumberInputs();
   loadDefaults().catch((e) => showError(`기본 설정 로드 실패: ${e.message}`));
+
+  // 버전 표시 — 단일 출처(pyproject.toml)에서 /api/version 으로 받아옴
+  fetch("/api/version")
+    .then((r) => r.json())
+    .then((d) => {
+      const v = document.getElementById("app-version");
+      if (v && d && d.version) v.textContent = `v${d.version}`;
+    })
+    .catch(() => {});
 })();

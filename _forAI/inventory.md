@@ -28,14 +28,16 @@
 - [.python-version](../.python-version) — `3` (uv 가 3.11+ 잡도록)
 - [.gitignore](../.gitignore) — `.venv`, `__pycache__`, build artifacts
 - `_forAI/` — AI 작업 문맥 (이 디렉터리)
-- `logs/` — CLI 라이브 모드 세션 로그 (런타임 생성, gitignore 안 됨, 수동 정리)
+- `logs/` — CLI 라이브 모드 + PM2 (`pm2-out.log`, `pm2-err.log`) 세션 로그
 - `.venv/` — uv 가상환경
+- [ecosystem.config.cjs](../ecosystem.config.cjs) — PM2 ecosystem (port 21037, uv 절대경로 호출, `BCC_SIM_VERSION` 환경변수에 pyproject 버전 주입)
+- [pm2-start.sh](../pm2-start.sh) / [pm2-stop.sh](../pm2-stop.sh) — PM2 등록·기동·정지 헬퍼 스크립트
 
 ## Source modules
 
 | 파일 | 역할 |
 |------|------|
-| [bcc_sim/__init__.py](../bcc_sim/__init__.py) | `__version__ = "0.1.0"` |
+| [bcc_sim/__init__.py](../bcc_sim/__init__.py) | `__version__` — `importlib.metadata` 우선, 실패 시 `tomllib` 로 `pyproject.toml` 직접 파싱 fallback |
 | [bcc_sim/deck.py](../bcc_sim/deck.py) | `Card` (rank·suit, `baccarat_value`, `__str__`), `Shoe` (8덱 무복원 셔플, 컷 오프셋, 시드 주입) |
 | [bcc_sim/baccarat.py](../bcc_sim/baccarat.py) | `Outcome` enum, `HandResult` (cards 포함), `play_hand` (Punto Banco 룰, 카드 수집) |
 | [bcc_sim/strategy.py](../bcc_sim/strategy.py) | `Strategy` Protocol, `FlatBet`, `Martingale` (pivot + martin_steps), `payout_won` |
@@ -44,12 +46,12 @@
 | [bcc_sim/report.py](../bcc_sim/report.py) | ANSI 색, `format_banner`, `format_report`, `iter_live_session_lines`, `iter_session_trace_lines`, `LiveDashboard`, `write_session_log` |
 | [bcc_sim/web/__init__.py](../bcc_sim/web/__init__.py) | 웹 패키지 마커 |
 | [bcc_sim/web/__main__.py](../bcc_sim/web/__main__.py) | `python -m bcc_sim.web` 엔트리포인트 (uvicorn 기동, host/port/reload 옵션) |
-| [bcc_sim/web/server.py](../bcc_sim/web/server.py) | FastAPI app — `GET /`, `GET /api/defaults`, `WS /ws/play`, `/static` mount |
+| [bcc_sim/web/server.py](../bcc_sim/web/server.py) | FastAPI app — `GET /`, `GET /api/defaults`, `GET /api/version`, `WS /ws/play`, `/static` mount |
 | [bcc_sim/web/session_runner.py](../bcc_sim/web/session_runner.py) | WebSocket 세션 루프 — 컨트롤(`start/pause/resume/next_session/stop`), 누적 P&L 추적, `run_session_traced` 재사용 |
 | [bcc_sim/web/serialize.py](../bcc_sim/web/serialize.py) | `Card / Outcome / HandRecord / SessionResult / SessionConfig` ↔ dict 변환 + `DEFAULT_CONFIG` (CLI 와 동기) |
-| [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html) | 2-frame 레이아웃 (좌 Settings / 우 Dashboard) |
-| [bcc_sim/web/static/style.css](../bcc_sim/web/static/style.css) | 다크 테마, 등폭 폰트, 게이지 바, 카드 색(♥♦ red), 반응형 |
-| [bcc_sim/web/static/app.js](../bcc_sim/web/static/app.js) | WebSocket 클라이언트, 폼↔config, DOM 갱신, 컨트롤 버튼, 패널 토글 |
+| [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html) | 2-frame 레이아웃 (좌 Settings / 우 Dashboard) + NES.css 클래스, 헤더에 `app-version` 배지, 통계 패널에 체감시간 2행 |
+| [bcc_sim/web/static/style.css](../bcc_sim/web/static/style.css) | NES.css 위에 픽셀 스타일 오버라이드 — 흰 배경, SNES 4버튼 컬러, IBM Plex Sans/Mono KR + Press Start 2P 폰트, 게이지/카드 픽셀 보더, 반응형 |
+| [bcc_sim/web/static/app.js](../bcc_sim/web/static/app.js) | WebSocket 클라이언트, 폼↔config, DOM 갱신, 컨트롤 버튼, 패널 토글, `/api/version` 헤더 표시, `SECONDS_PER_HAND=40` 체감시간 계산 (`fmtRealTime`, `state.cumulativeHands`) |
 
 ## Tests
 
@@ -131,6 +133,36 @@ uv run python -m bcc_sim.web --reload                     # 개발용 자동 rel
 ### 사용자 가이드
 
 상세 사용법은 [docs/web_guide.md](../docs/web_guide.md) 참조.
+
+### PM2 배포
+
+상시 운영은 PM2 로 관리한다 (포트 21037 고정).
+
+```bash
+./pm2-start.sh                                  # 또는 pm2 start ecosystem.config.cjs
+pm2 logs bcc-sim-web
+pm2 restart bcc-sim-web --update-env            # 버전 올렸을 때
+./pm2-stop.sh                                   # pm2 stop + delete
+pm2 save && pm2 startup                         # 부팅시 자동 기동 (1회만)
+```
+
+- 접속: `http://localhost:21037`
+- PM2 status 의 `version` 컬럼은 외부 바이너리 script 한계로 `N/A` 가 정상. 버전 확인은 `curl /api/version` 또는 UI 헤더 배지.
+- ⚠ `pm2 kill` 은 daemon 전체를 죽이므로 다른 앱(dalus 등)도 함께 정지된다. `dump.pm2.bak` 으로 복구 가능하지만 사용 전 확인할 것.
+
+### 버전 단일 출처
+
+[pyproject.toml](../pyproject.toml) 의 `version` 한 곳을 source of truth 로 한다. 올리는 절차:
+
+1. `pyproject.toml` 의 `version = "x.y.z"` 수정
+2. `pm2 restart bcc-sim-web --update-env` (또는 `./pm2-start.sh` 재실행)
+3. UI 헤더 배지·`/api/version`·`BCC_SIM_VERSION` env 모두 자동 반영
+
+전파 경로:
+- `bcc_sim/__init__.py` → `importlib.metadata` 또는 `tomllib` 로 동적 로드
+- `bcc_sim/web/server.py` → `/api/version` 및 FastAPI `app.version`
+- `bcc_sim/web/static/app.js` → 헤더 배지 갱신
+- `ecosystem.config.cjs` → 정규식으로 pyproject 파싱 → `BCC_SIM_VERSION` env
 
 ## Notes
 

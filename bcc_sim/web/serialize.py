@@ -19,7 +19,7 @@ DEFAULT_CONFIG: dict = {
     "seed": 42,
     "n_decks": 8,
     "cut_offset": 14,
-    "hand_delay_ms": 300,
+    "hand_delay_ms": 50,
     "auto_next": False,
 }
 

@@ -232,9 +232,24 @@ uv run python -m bcc_sim.web --reload                     # 개발용 자동 재
 
 엔드포인트:
 - `GET /api/defaults` — CLI 기본값과 동일한 설정 JSON (프론트 폼 초기값)
+- `GET /api/version` — `pyproject.toml` 의 버전을 반환 (UI 헤더 배지에 표시)
 - `WS /ws/play` — 시뮬레이션 스트림 (`start`/`pause`/`resume`/`next_session`/`stop`)
 
 자세한 실행/접속/사용법은 [docs/web_guide.md](docs/web_guide.md) 참조.
+
+### PM2 배포 (포트 21037)
+
+상시 운영은 PM2 로 관리한다. 버전은 `pyproject.toml` 한 곳만 고치면 API/UI/환경변수에 모두 반영된다.
+
+```bash
+./pm2-start.sh                                  # pm2 start ecosystem.config.cjs + pm2 save
+pm2 logs bcc-sim-web
+pm2 restart bcc-sim-web --update-env            # 버전/설정 변경 후
+./pm2-stop.sh                                   # pm2 stop + delete
+pm2 save && pm2 startup                         # 부팅시 자동 기동 (1회만)
+```
+
+접속: `http://localhost:21037`
 
 ## 테스트
 

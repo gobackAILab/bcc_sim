@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>bcc-sim · 바카라 마틴게일 시뮬레이터</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nes.css@2.3.0/css/nes.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Press+Start+2P&display=swap">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -11,68 +13,72 @@
 
   <aside id="settings-panel" aria-label="설정">
     <header class="panel-header">
-      <h2>⚙ Settings</h2>
-      <button type="button" id="toggle-panel" class="icon-btn" title="패널 접기">«</button>
+      <h2 class="nes-text is-primary">⚙ 설정</h2>
+      <button type="button" id="toggle-panel" class="nes-btn is-warning icon-btn" title="패널 접기" aria-controls="settings-panel" aria-expanded="true">«</button>
     </header>
     <form id="config-form">
 
-      <fieldset>
-        <legend>전략</legend>
-        <label class="radio"><input type="radio" name="strategy_name" value="flat"> flat</label>
-        <label class="radio"><input type="radio" name="strategy_name" value="martingale" checked> martingale</label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">전략</p>
+        <label class="radio"><input type="radio" class="nes-radio" name="strategy_name" value="flat"><span>flat</span></label>
+        <label class="radio"><input type="radio" class="nes-radio" name="strategy_name" value="martingale" checked><span>martingale</span></label>
+      </div>
 
-      <fieldset>
-        <legend>Primary Side</legend>
-        <label class="radio"><input type="radio" name="side" value="BANKER" checked> banker</label>
-        <label class="radio"><input type="radio" name="side" value="PLAYER"> player</label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">기준 베팅</p>
+        <label class="radio"><input type="radio" class="nes-radio" name="side" value="BANKER" checked><span>banker</span></label>
+        <label class="radio"><input type="radio" class="nes-radio" name="side" value="PLAYER"><span>player</span></label>
+      </div>
 
-      <fieldset>
-        <legend>자본 (원)</legend>
-        <label>initial<input type="number" name="initial_won" min="1" step="1000"></label>
-        <label>target<input type="number" name="target_won" min="1" step="1000"></label>
-        <label>ruin<input type="number" name="ruin_won" min="0" step="1000"></label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">자본 (원)</p>
+        <label>initial<input type="number" class="nes-input" name="initial_won" min="1"></label>
+        <label>target<input type="number" class="nes-input" name="target_won" min="1"></label>
+        <label>ruin<input type="number" class="nes-input" name="ruin_won" min="0"></label>
+      </div>
 
-      <fieldset>
-        <legend>베팅 (원)</legend>
-        <label>base-bet<input type="number" name="base_bet_won" min="1" step="100"></label>
-        <label>table-max<input type="number" name="table_max_won" min="1" step="1000"></label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">베팅 (원)</p>
+        <label>base-bet<input type="number" class="nes-input" name="base_bet_won" min="1"></label>
+        <label>table-max<input type="number" class="nes-input" name="table_max_won" min="1"></label>
+      </div>
 
-      <fieldset>
-        <legend>마틴게일</legend>
-        <label>steps<input type="number" name="martin_steps" min="1" max="20"></label>
-        <label class="checkbox"><input type="checkbox" name="pivot"> pivot</label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">마틴게일</p>
+        <label>steps<input type="number" class="nes-input" name="martin_steps" min="1" max="20"></label>
+        <label class="checkbox"><input type="checkbox" class="nes-checkbox" name="pivot"><span>pivot</span></label>
+      </div>
 
-      <fieldset>
-        <legend>슈</legend>
-        <label>decks<input type="number" name="n_decks" min="1" max="16"></label>
-        <label>cut-offset<input type="number" name="cut_offset" min="0" max="200"></label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">슈</p>
+        <label>decks<input type="number" class="nes-input" name="n_decks" min="1" max="16"></label>
+        <label>cut-offset<input type="number" class="nes-input" name="cut_offset" min="0" max="200"></label>
+      </div>
 
-      <fieldset>
-        <legend>진행</legend>
-        <label>delay (ms)<input type="number" name="hand_delay_ms" min="0" max="5000" step="50"></label>
-        <label class="checkbox"><input type="checkbox" name="auto_next"> auto next</label>
-        <label>seed<input type="number" name="seed"></label>
-      </fieldset>
+      <div class="nes-container with-title is-rounded form-group">
+        <p class="title">진행</p>
+        <label>delay (ms)<input type="number" class="nes-input" name="hand_delay_ms" min="0" max="5000" step="50"></label>
+        <label class="checkbox"><input type="checkbox" class="nes-checkbox" name="auto_next"><span>auto next</span></label>
+        <label>seed<input type="number" class="nes-input" name="seed"></label>
+      </div>
 
-      <button type="submit" id="start-btn" class="primary-btn">▶ Apply &amp; Start</button>
+      <div class="settings-actions">
+        <button type="submit" id="apply-btn" class="nes-btn is-primary">Apply</button>
+      </div>
     </form>
   </aside>
 
   <main id="dashboard">
 
     <header class="dashboard-header">
-      <button type="button" id="show-panel" class="icon-btn" hidden title="패널 열기">»</button>
-      <h1>바카라 마틴게일 시뮬레이터</h1>
-      <span id="connection" class="badge offline">offline</span>
+      <button type="button" id="show-panel" class="nes-btn is-warning icon-btn" hidden title="패널 열기" aria-controls="settings-panel" aria-expanded="false">»</button>
+      <h1 class="nes-text is-primary">바카라 마틴게일 시뮬레이터</h1>
+      <span id="app-version" class="app-version" title="bcc-sim 버전">v—</span>
+      <span id="connection" class="nes-badge offline"><span>offline</span></span>
     </header>
 
-    <section class="card-panel" id="gauge-section">
+    <section class="nes-container with-title is-rounded card-panel" id="gauge-section">
+      <p class="title">자본 게이지</p>
       <div id="gauge-bar">
         <div id="gauge-fill"></div>
         <div id="gauge-marker" title="시작 자본"></div>
@@ -84,7 +90,8 @@
       </div>
     </section>
 
-    <section class="card-panel" id="capital-section">
+    <section class="nes-container with-title is-rounded card-panel" id="capital-section">
+      <p class="title">자본</p>
       <div class="row big">
         <span class="label">현재 자본</span>
         <span class="value mono" id="capital">-</span>
@@ -97,9 +104,10 @@
       </div>
     </section>
 
-    <section class="card-panel" id="current-hand">
-      <div class="row title">
-        <span>현재 핸드 <strong id="hand-num">-</strong></span>
+    <section class="nes-container with-title is-rounded card-panel" id="current-hand">
+      <p class="title">현재 핸드</p>
+      <div class="row title-row">
+        <span>핸드 <strong id="hand-num">-</strong></span>
         <span id="martin-event" class="martin-tag"></span>
       </div>
       <div class="row">
@@ -124,12 +132,13 @@
       </div>
     </section>
 
-    <section class="card-panel" id="recent-section">
-      <h3>최근 핸드</h3>
+    <section class="nes-container with-title is-rounded card-panel" id="recent-section">
+      <p class="title">최근 핸드</p>
       <ol id="recent-list" class="mono"></ol>
     </section>
 
-    <section class="card-panel" id="session-stats">
+    <section class="nes-container with-title is-rounded card-panel" id="session-stats">
+      <p class="title">통계</p>
       <div class="row">
         <span class="label">세션</span>
         <span class="value">#<span id="session-num">-</span></span>
@@ -140,19 +149,29 @@
         <span class="value mono">핸드 <span id="stat-hands">0</span> · 베팅 <span id="stat-bets">0</span> · 최장연패 <span id="stat-streak">0</span></span>
       </div>
       <div class="row">
+        <span class="label">체감</span>
+        <span class="value mono" id="stat-realtime" title="한 핸드 = 40초로 환산">-</span>
+      </div>
+      <div class="row">
         <span class="label">누계</span>
         <span class="value mono">승 <span id="cum-wins">0</span> · 파산 <span id="cum-ruins">0</span> · 진행 <span id="cum-sessions">0</span></span>
       </div>
+      <div class="row">
+        <span class="label">누계체감</span>
+        <span class="value mono" id="cum-realtime" title="누적 핸드 × 40초">-</span>
+      </div>
     </section>
 
-    <section class="card-panel" id="controls">
-      <button type="button" id="pause-btn" disabled>⏸ Pause</button>
-      <button type="button" id="resume-btn" disabled>▶ Resume</button>
-      <button type="button" id="next-btn" disabled>⏭ Next Session</button>
-      <button type="button" id="stop-btn" disabled>⏹ Stop</button>
+    <section class="nes-container with-title is-rounded card-panel" id="controls">
+      <p class="title">컨트롤</p>
+      <div class="control-buttons">
+        <button type="button" id="start-btn" class="nes-btn is-success">▶ Start</button>
+        <button type="button" id="pause-btn" class="nes-btn is-warning" disabled>⏸ Pause</button>
+        <button type="button" id="next-btn" class="nes-btn is-success" disabled>⏭ Next</button>
+      </div>
     </section>
 
-    <div id="error-banner" hidden></div>
+    <div id="error-banner" class="nes-container is-error is-rounded" hidden></div>
   </main>
 
 </div>

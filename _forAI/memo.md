@@ -19,6 +19,7 @@
 - [동작 규칙](#동작-규칙)
 - [라이브 모드 시각화](#라이브-모드-시각화)
 - [웹 인터페이스](#웹-인터페이스)
+- [버전 단일 출처 / PM2 배포](#버전-단일-출처--pm2-배포)
 - [반복 금지](#반복-금지)
 
 ## 제품 기준선
@@ -187,6 +188,29 @@ CLI 와 거의 같은 화면을 브라우저에서 제공. 사용자 문서 [doc
 
 `<span class="card red">` vs `<span class="card">`. CSS `font-variant-emoji: text` 로 모바일에서 이모지 그림 렌더 방지.
 
+## 버전 단일 출처 / PM2 배포
+
+**단일 출처**: [pyproject.toml](../pyproject.toml) 의 `version`. 한 번만 수정하면 아래 4곳에 자동 전파:
+
+| 소비처 | 경로 | 메커니즘 |
+|------|------|---------|
+| Python | `bcc_sim.__version__` | `importlib.metadata.version("bcc-sim")` → 실패 시 `tomllib` 로 pyproject 직접 파싱 |
+| 웹 API | `GET /api/version` | `from .. import __version__` |
+| 웹 UI | 헤더 `app-version` 배지 | `fetch("/api/version")` |
+| PM2 env | `BCC_SIM_VERSION` | `ecosystem.config.cjs` 가 정규식으로 pyproject 파싱 |
+
+**PM2 status `version` 컬럼**: 외부 바이너리를 script 로 쓸 때 (`script: "/path/to/uv"`) PM2 가 cwd 의 `package.json` 을 자동 인식 못 함 → `N/A` 표시는 정상. dalus_server 처럼 `.js` script 일 때만 자동 표시되는 PM2 자체 동작.
+
+**배포 절차** (포트 21037):
+
+```bash
+./pm2-start.sh                           # pm2 start ecosystem.config.cjs + pm2 save
+pm2 restart bcc-sim-web --update-env     # 버전/설정 갱신 후
+./pm2-stop.sh                            # 정지
+```
+
+로그: `logs/pm2-out.log`, `logs/pm2-err.log`.
+
 ## 반복 금지
 
 - 카드 인출을 **복원 추출**(매번 무작위 카드)로 구현하지 말 것. 슈 단위 무복원이어야 시뮬레이션의 신뢰성이 산다 — 사용자가 명시한 핵심 요구사항.
@@ -200,3 +224,8 @@ CLI 와 거의 같은 화면을 브라우저에서 제공. 사용자 문서 [doc
 - 웹 session_runner 에서 `asyncio.sleep(delay)` 는 `delay=0` 이어도 **항상 호출** — 그래야 control reader task 가 핸드 사이에 메시지를 처리할 기회를 얻는다. 조건부 (`if delay > 0:`) 로 만들면 pause/stop 이 안 먹힘.
 - 웹 프론트의 폼은 새 옵션 추가 시 `index.html` + `app.js readConfig` + `DEFAULT_CONFIG` 세 군데 동기 필요.
 - 웹 인터페이스는 CLI 의 `--mode` 에 통합하지 말 것 — 의존성(uvicorn) 과 기동방식이 달라 별도 엔트리 (`python -m bcc_sim.web`) 유지. 사용자 합의된 분리.
+- `<input type="number">` 에 `min` 과 `step` 을 같이 줄 때는 **`min` 이 `step` 의 배수의 시작점** 이 되도록 맞출 것. 예) `min="1" step="1000"` 은 `1, 1001, 2001, …` 만 유효해서 `100000` 같은 디폴트 값이 브라우저 검증에서 거부됨. 가능하면 step 을 생략하거나 `min="0"` 사용.
+- 웹 폼 자체 검증 메시지("가장 근접한 유효 값 X / Y") 가 뜨면 서버 검증이 아니라 HTML5 native validation 임을 먼저 의심.
+- 버전을 여러 곳에 하드코딩하지 말 것. `pyproject.toml` 단일 출처를 유지하고, Python 은 `bcc_sim.__version__`, 프론트는 `/api/version`, ecosystem 은 `BCC_SIM_VERSION` env 로 받는다.
+- PM2 status 의 `version` 컬럼을 표시하려고 Node wrapper(`run.cjs`)를 만들지 말 것. 외부 바이너리(`uv`)를 직접 script 로 쓸 때 컬럼이 N/A 인 건 PM2 한계이고, 우회를 위해 wrapper 를 둘 만큼 이득이 없다고 사용자 판단함. UI/API/env 에 버전 노출이면 충분.
+- `pm2 kill` / `pm2 delete all` 같은 daemon 전체 영향 명령은 **사전 확인 없이 실행 금지**. 다른 앱(dalus, dap3d 등)이 같이 죽는다. 복구는 `/home/agent01/.pm2/dump.pm2.bak` → `cp ... dump.pm2 && pm2 resurrect` 가능하지만 사고 자체를 피할 것.

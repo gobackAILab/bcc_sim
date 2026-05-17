@@ -1,18 +1,32 @@
 :root {
-  --bg: #0e1116;
-  --panel: #161b22;
-  --panel-2: #1c2330;
-  --border: #2d333b;
-  --text: #d0d7de;
-  --muted: #8b949e;
-  --accent: #58a6ff;
-  --green: #2ea043;
-  --green-soft: #1f6f33;
-  --red: #f85149;
-  --red-soft: #8b1f1f;
-  --yellow: #d29922;
-  --player: #58a6ff;
-  --banker: #ffa657;
+  --bg: #f3f5fb;
+  --bg-grid: rgba(45, 33, 72, 0.04);
+  --bg-deep: #242034;
+  --panel: #ffffff;
+  --panel-2: #fffefa;
+  --border: #242034;
+  --text: #191625;
+  --muted: #5d6272;
+
+  --snes-red: #d63f5d;
+  --snes-blue: #245fd6;
+  --snes-green: #187a5b;
+  --snes-yellow: #efc54b;
+  --snes-purple: #7653b9;
+  --teal: #0d8c92;
+  --orange: #e06d2f;
+
+  --accent: var(--teal);
+  --green: var(--snes-green);
+  --red: var(--snes-red);
+  --yellow: var(--snes-yellow);
+  --player: var(--snes-blue);
+  --banker: var(--snes-red);
+
+  --display-font: "Press Start 2P", "IBM Plex Mono", monospace;
+  --mono-font: "IBM Plex Mono", "Cascadia Code", "Consolas", monospace;
+  --body-font: "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --settings-width: 330px;
 }
 
 * { box-sizing: border-box; }
@@ -20,294 +34,605 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--text);
-  font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
+  font-family: var(--body-font);
+  font-size: 16px;
+  line-height: 1.45;
   height: 100%;
 }
 
+.nes-container {
+  background-color: var(--panel-2);
+  color: var(--text);
+  border-color: var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 rgba(36, 32, 52, 0.16);
+}
+.nes-container > .title {
+  color: var(--snes-purple);
+  background-color: var(--panel-2);
+}
+
 .mono {
-  font-family: "SF Mono", "JetBrains Mono", "Cascadia Code", "Consolas", "Menlo", monospace;
+  font-family: var(--mono-font);
+  font-size: 15px;
+  font-weight: 600;
   font-variant-ligatures: none;
   font-variant-emoji: text;
 }
 
 #app {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: var(--settings-width) minmax(0, 1fr);
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
 }
-#app.panel-collapsed { grid-template-columns: 0 1fr; }
-#app.panel-collapsed #settings-panel { display: none; }
+#app.panel-collapsed { grid-template-columns: 0 minmax(0, 1fr); }
 
 /* ───── Settings panel ───── */
 #settings-panel {
-  background: var(--panel);
-  border-right: 1px solid var(--border);
+  grid-column: 1;
+  min-width: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 240px),
+    var(--bg-deep);
+  border-right: 4px solid var(--border);
   overflow-y: auto;
-  padding: 16px;
+  padding: 14px 12px 82px;
+}
+#app.panel-collapsed #settings-panel {
+  visibility: hidden;
+  padding: 0;
+  border-right-width: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  padding: 0 4px;
 }
-.panel-header h2 { margin: 0; font-size: 16px; }
-.icon-btn {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-family: inherit;
-}
-.icon-btn:hover { background: var(--border); }
-
-#config-form fieldset {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  margin: 0 0 12px 0;
-  padding: 8px 10px 10px 10px;
-  background: var(--panel-2);
-}
-#config-form legend {
-  color: var(--muted);
+.panel-header h2 {
+  margin: 0;
+  color: #f8f7ff !important;
+  font-family: var(--display-font);
   font-size: 12px;
-  padding: 0 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.icon-btn {
+  min-width: 40px;
+  padding: 6px 10px !important;
+  font-family: var(--mono-font) !important;
+  font-size: 15px !important;
+}
+#app.panel-collapsed #show-panel {
+  position: fixed;
+  top: 18px;
+  left: 16px;
+  z-index: 30;
+  box-shadow: 3px 3px 0 rgba(36, 32, 52, 0.28);
+}
+
+/* form fieldset → nes container */
+.form-group {
+  margin-bottom: 10px !important;
+  padding: 12px 10px !important;
+}
+.form-group > .title {
+  font-family: var(--mono-font);
+  font-size: 12px !important;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 0 7px;
+  color: var(--snes-purple) !important;
 }
 #config-form label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin: 6px 0;
-  font-size: 13px;
+  margin: 7px 0;
+  font-family: var(--body-font);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
 }
 #config-form label.radio,
 #config-form label.checkbox {
   justify-content: flex-start;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
+  min-height: 26px;
+  font-size: 15px;
 }
-#config-form input[type="number"] {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 4px 6px;
-  width: 110px;
+#config-form input[type="number"].nes-input {
+  width: 132px;
   text-align: right;
-  font-family: inherit;
-}
-#config-form input[type="number"]:focus { outline: 1px solid var(--accent); }
-#config-form input[type="radio"],
-#config-form input[type="checkbox"] { accent-color: var(--accent); }
-
-.primary-btn {
-  width: 100%;
-  background: var(--accent);
-  color: #0d1117;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 12px;
+  font-family: var(--mono-font);
+  font-size: 15px;
   font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 4px;
+  padding: 7px 9px;
+  background-color: #ffffff !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  appearance: textfield !important;
+  -moz-appearance: textfield !important;
 }
-.primary-btn:hover { background: #6cb6ff; }
-.primary-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+#config-form input[type="number"].nes-input::-webkit-inner-spin-button,
+#config-form input[type="number"].nes-input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none !important;
+}
+
+.settings-actions {
+  margin: 10px -12px -82px;
+  padding: 12px;
+  background:
+    linear-gradient(180deg, rgba(36, 32, 52, 0), var(--bg-deep) 18px),
+    var(--bg-deep);
+  border-top: 4px solid var(--border);
+}
+#apply-btn {
+  width: 100%;
+  font-family: var(--mono-font) !important;
+  font-size: 15px !important;
+}
+@media (min-width: 901px) {
+  .settings-actions {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 22;
+    width: var(--settings-width);
+    margin: 0;
+    padding: 12px;
+    box-shadow: 0 -6px 0 rgba(0, 0, 0, 0.2);
+  }
+  #apply-btn {
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.28);
+  }
+  #app.panel-collapsed .settings-actions {
+    display: none;
+  }
+}
 
 /* ───── Dashboard ───── */
 #dashboard {
+  grid-column: 2;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(350px, 1fr) minmax(350px, 1fr);
+  grid-auto-rows: max-content;
+  gap: 12px;
   overflow-y: auto;
-  padding: 16px 20px 20px 20px;
+  padding: 16px 18px 112px;
+  background: transparent;
 }
 .dashboard-header {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 2px;
+}
+#app.panel-collapsed .dashboard-header {
+  padding-left: 52px;
 }
 .dashboard-header h1 {
   margin: 0;
-  font-size: 18px;
+  color: var(--text) !important;
+  font-family: var(--body-font);
+  font-size: 28px;
+  font-weight: 800;
   flex: 1;
+  letter-spacing: 0;
+  line-height: 1.25;
 }
-.badge {
-  font-size: 11px;
+.dashboard-header h1::before {
+  content: "BCC-SIM";
+  display: block;
+  margin-bottom: 4px;
+  color: var(--teal);
+  font-family: var(--display-font);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.app-version {
+  font-family: var(--mono-font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
   padding: 2px 8px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: #fff;
+  white-space: nowrap;
 }
-.badge.online { color: var(--green); border-color: var(--green-soft); }
-.badge.offline { color: var(--muted); }
-.badge.paused { color: var(--yellow); border-color: #6b5b00; }
 
+/* 카드 패널 */
 .card-panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
+  margin-bottom: 0 !important;
+  padding: 14px 16px !important;
 }
+.card-panel > .title {
+  font-family: var(--mono-font);
+  font-size: 13px !important;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 0 8px;
+  color: var(--snes-purple) !important;
+}
+
+#capital-section { grid-column: 1; grid-row: 2; }
+#gauge-section { grid-column: 2; grid-row: 2; }
+#current-hand { grid-column: 1; grid-row: 3; }
+#session-stats { grid-column: 2; grid-row: 3; }
+#recent-section {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  min-height: 150px;
+}
+#error-banner { grid-column: 1 / -1; }
+
+/* badge */
+.nes-badge {
+  font-family: var(--mono-font);
+  font-size: 14px;
+  font-weight: 700;
+}
+.nes-badge.offline span { background-color: var(--muted) !important; color: #fff !important; }
+.nes-badge.online span  { background-color: var(--snes-green) !important; color: #fff !important; }
+.nes-badge.paused span  { background-color: var(--snes-yellow) !important; color: #000 !important; }
 
 /* gauge */
 #gauge-bar {
   position: relative;
-  height: 22px;
-  background: var(--panel-2);
-  border-radius: 4px;
+  height: 34px;
+  background: #ffffff;
+  border: 3px solid var(--border);
   overflow: hidden;
-  border: 1px solid var(--border);
+  margin: 8px 0;
+  image-rendering: pixelated;
 }
 #gauge-fill {
   position: absolute;
   top: 0; left: 0; bottom: 0;
   width: 0%;
-  background: var(--green-soft);
-  transition: width 120ms linear, background 120ms linear;
+  background: var(--snes-green);
+  transition: width 120ms steps(8), background 120ms;
+  background-image: linear-gradient(
+    90deg,
+    #126f52 0%,
+    var(--snes-green) 50%,
+    #126f52 100%
+  );
 }
-#gauge-fill.below { background: var(--red-soft); }
+#gauge-fill.below {
+  background: var(--snes-red);
+  background-image: linear-gradient(
+    90deg,
+    #aa2a44 0%,
+    var(--snes-red) 50%,
+    #aa2a44 100%
+  );
+}
 #gauge-marker {
   position: absolute;
-  top: -2px; bottom: -2px;
-  width: 2px;
-  background: var(--yellow);
+  top: -4px; bottom: -4px;
+  width: 4px;
+  background: var(--snes-yellow);
   left: 20%;
+  box-shadow: 0 0 0 1px #000;
 }
 #gauge-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 4px;
-  font-size: 11px;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: var(--mono-font);
+  font-size: 14px;
+  font-weight: 600;
   color: var(--muted);
 }
-#gauge-labels em { font-style: normal; color: var(--text); font-family: inherit; }
+#gauge-labels em {
+  font-style: normal;
+  color: var(--text);
+  font-family: var(--mono-font);
+  margin-left: 4px;
+}
 .g-center { text-align: center; }
-.g-right  { text-align: right; }
+.g-right { text-align: right; }
 
 /* rows */
 .row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 3px 0;
+  gap: 10px 14px;
+  padding: 5px 0;
   flex-wrap: wrap;
 }
-.row.big { font-size: 16px; }
-.row.title { font-size: 14px; margin-bottom: 4px; }
-.label {
-  color: var(--muted);
-  min-width: 70px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+.row.big {
+  font-size: 19px;
 }
-.value { font-weight: 500; }
-.muted { color: var(--muted); font-size: 12px; }
+.row.big .value.mono {
+  color: var(--snes-purple);
+  font-size: 26px;
+  line-height: 1.2;
+}
+.row.title-row {
+  font-size: 17px;
+  margin-bottom: 4px;
+  font-family: var(--mono-font);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.label {
+  color: var(--snes-blue);
+  min-width: 88px;
+  font-family: var(--mono-font);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.value {
+  font-family: var(--body-font);
+  font-size: 17px;
+  font-weight: 700;
+}
+.muted {
+  color: var(--muted);
+  font-family: var(--mono-font);
+  font-size: 14px;
+  font-weight: 600;
+}
 
-/* cards */
-.cards { letter-spacing: 0.1em; }
+/* 트럼프 카드 */
+.cards {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  letter-spacing: 0;
+}
 .card {
   display: inline-block;
-  padding: 2px 6px;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  background: #f5f5f5;
+  padding: 5px 10px;
+  border: 2px solid var(--border);
+  background: #fafafa;
   color: #1a1a1a;
-  margin-right: 4px;
-  min-width: 28px;
+  margin-right: 0;
+  min-width: 42px;
   text-align: center;
-  font-family: "SF Mono", "JetBrains Mono", "Consolas", monospace;
+  font-family: var(--mono-font);
+  font-size: 16px;
+  font-weight: 700;
   font-variant-emoji: text;
+  box-shadow: 2px 2px 0 var(--border);
 }
-.card.red { color: #c93030; }
+.card.red { color: var(--snes-red); }
 
-.side-label.player-label { color: var(--player); }
-.side-label.banker-label { color: var(--banker); }
+.side-label.player-label { color: var(--snes-blue); }
+.side-label.banker-label { color: var(--snes-red); }
 
+/* martin tag */
 .martin-tag {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-family: var(--mono-font);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 9px;
+  letter-spacing: 0;
+  border: 2px solid currentColor;
 }
-.martin-tag.start  { background: var(--red-soft); color: #ffd7d7; }
-.martin-tag.end_win { background: var(--green-soft); color: #d7ffd7; }
-.martin-tag.end_giveup { background: #6b5b00; color: #ffe9a8; }
+.martin-tag.start {
+  background: var(--snes-red);
+  color: #fff;
+  border-color: #8a1a30;
+}
+.martin-tag.end_win {
+  background: var(--snes-green);
+  color: #fff;
+  border-color: #2a7a2a;
+}
+.martin-tag.end_giveup {
+  background: var(--snes-yellow);
+  color: #000;
+  border-color: #a88a00;
+}
 
-/* result colors */
-.outcome-WIN { color: var(--green); font-weight: 600; }
-.outcome-LOSS { color: var(--red); font-weight: 600; }
-.outcome-TIE { color: var(--yellow); font-weight: 600; }
-.delta-pos { color: var(--green); }
-.delta-neg { color: var(--red); }
+/* 결과 색상 */
+.outcome-WIN  { color: var(--snes-green); font-family: var(--mono-font); font-size: 16px; font-weight: 800; }
+.outcome-LOSS { color: var(--snes-red); font-family: var(--mono-font); font-size: 16px; font-weight: 800; }
+.outcome-TIE  { color: #8c6500; font-family: var(--mono-font); font-size: 16px; font-weight: 800; }
+.delta-pos { color: var(--snes-green); }
+.delta-neg { color: var(--snes-red); }
 .delta-zero { color: var(--muted); }
-.pnl-pos { color: var(--green); }
-.pnl-neg { color: var(--red); }
+.pnl-pos { color: var(--snes-green); }
+.pnl-neg { color: var(--snes-red); }
 
 /* recent list */
 #recent-list {
   list-style: none;
-  padding: 0;
   margin: 6px 0 0 0;
-  font-size: 12px;
-  max-height: 180px;
-  overflow-y: auto;
+  font-family: var(--mono-font);
+  font-size: 15px;
+  font-weight: 600;
+  max-height: min(310px, 42vh);
+  min-height: 88px;
+  overflow: auto;
+  border: 2px solid var(--border);
+  background: #ffffff;
+  padding: 6px 8px;
 }
 #recent-list li {
-  padding: 3px 4px;
-  border-bottom: 1px dashed var(--border);
-  display: flex;
+  min-width: 610px;
+  padding: 8px 4px;
+  border-bottom: 2px dashed var(--bg-deep);
+  display: grid;
+  grid-template-columns: 62px 165px 76px 120px minmax(0, 1fr);
   gap: 10px;
+  align-items: center;
 }
 #recent-list li:last-child { border-bottom: none; }
-#recent-list .col-hand { color: var(--muted); width: 50px; }
-#recent-list .col-bet { width: 110px; }
-#recent-list .col-result { width: 60px; }
+#recent-list .col-hand { color: var(--muted); }
 
-/* controls */
+/* controls — SNES 버튼 4컬러 */
 #controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: var(--settings-width);
+  z-index: 20;
+  margin: 0 !important;
+  padding: 12px 18px 14px !important;
+  border-width: 4px 0 0 4px !important;
+  background:
+    linear-gradient(90deg, rgba(13, 140, 146, 0.12), transparent 44%),
+    var(--panel-2);
+  box-shadow: 0 -6px 0 rgba(36, 32, 52, 0.12);
 }
-#controls button {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 8px 14px;
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
+#app.panel-collapsed #controls {
+  left: 0;
+  border-left-width: 0 !important;
 }
-#controls button:hover:not(:disabled) { background: var(--border); }
-#controls button:disabled { color: var(--muted); cursor: not-allowed; opacity: 0.5; }
-#stop-btn:not(:disabled) { border-color: var(--red-soft); color: #ffb0b0; }
+#controls > .title {
+  font-family: var(--mono-font);
+  font-size: 12px !important;
+  font-weight: 800;
+  color: var(--teal) !important;
+}
+.control-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 2px;
+}
+.control-buttons .nes-btn {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  overflow: hidden;
+  font-family: var(--mono-font) !important;
+  font-size: 15px !important;
+  font-weight: 700;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.control-buttons .nes-btn:disabled {
+  filter: grayscale(0.75);
+  opacity: 0.42;
+}
 
 /* error */
 #error-banner {
-  background: var(--red-soft);
-  color: #fff5f5;
-  border: 1px solid var(--red);
-  border-radius: 4px;
-  padding: 10px 14px;
-  margin-top: 10px;
+  margin-top: 14px;
+  padding: 14px 18px !important;
+  font-family: var(--body-font);
+  font-size: 14px;
+  font-weight: 600;
 }
 
+/* scrollbar */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 2px solid var(--bg-deep);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--snes-blue); }
+
 /* responsive */
-@media (max-width: 800px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  #settings-panel { border-right: none; border-bottom: 1px solid var(--border); max-height: 50vh; }
+@media (max-width: 1120px) {
+  #dashboard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #capital-section,
+  #gauge-section,
+  #current-hand,
+  #recent-section,
+  #session-stats,
+  #error-banner {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  #recent-list li {
+    min-width: 0;
+    grid-template-columns: 62px minmax(150px, 1fr) 76px 120px;
+  }
+  #recent-list li .muted {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  #app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  #app.panel-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 0 minmax(0, 1fr);
+  }
+  #app.panel-collapsed #show-panel {
+    top: 14px;
+    left: 12px;
+  }
+  #settings-panel {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: none;
+    border-bottom: 4px solid var(--border);
+    max-height: 44vh;
+  }
+  #app.panel-collapsed #settings-panel {
+    max-height: 0;
+    border-bottom-width: 0;
+  }
+  #dashboard {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 12px 12px 156px;
+  }
+  .dashboard-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  #app.panel-collapsed .dashboard-header {
+    padding-left: 48px;
+  }
+  .dashboard-header h1 { font-size: 19px; }
+  #controls {
+    left: 0;
+    padding: 10px 10px 12px !important;
+    border-left-width: 0 !important;
+  }
+  .control-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .control-buttons .nes-btn {
+    font-size: 14px !important;
+    padding: 8px 8px;
+  }
+  .row.big .value.mono {
+    font-size: 22px;
+  }
+  .label {
+    min-width: 84px;
+  }
+  #gauge-labels {
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
 }
