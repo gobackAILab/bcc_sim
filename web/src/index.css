@@ -1,0 +1,78 @@
+:root {
+  --page-bg: #f3f5fb;
+  --page-grid: rgb(45 33 72 / 4%);
+  --sidebar-bg: #242034;
+  --panel-bg: #fffefa;
+  --paper: #ffffff;
+  --border: #242034;
+  --text: #191625;
+  --muted: #5d6272;
+  --red: #c93352;
+  --blue: #245fd6;
+  --green: #187a5b;
+  --yellow: #efc54b;
+  --purple: #7653b9;
+  --teal: #0d7d84;
+  --orange: #d65f25;
+  --settings-width: 330px;
+  --body-font:
+    "IBM Plex Sans KR", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --mono-font:
+    "IBM Plex Mono", "Cascadia Code", "Consolas", ui-monospace, monospace;
+
+  color: var(--text);
+  background: var(--page-bg);
+  font-family: var(--body-font);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background-color: var(--page-bg);
+  background-image:
+    linear-gradient(var(--page-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--page-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+label,
+input[type="radio"],
+input[type="checkbox"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #15a7b0;
+  outline-offset: 3px;
+}
+
+::selection {
+  color: #fff;
+  background: var(--purple);
+}
