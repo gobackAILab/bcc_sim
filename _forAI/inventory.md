@@ -4,173 +4,185 @@
 
 - [Repository](#repository)
 - [Top-level structure](#top-level-structure)
-- [Source modules](#source-modules)
-- [Tests](#tests)
+- [Python implementation](#python-implementation)
+- [Static web implementation](#static-web-implementation)
+- [Tests and parity fixtures](#tests-and-parity-fixtures)
 - [Build and validation commands](#build-and-validation-commands)
-- [CLI usage](#cli-usage)
-- [Web usage](#web-usage)
-- [Notes](#notes)
+- [Runtime and deployment](#runtime-and-deployment)
+- [Version and defaults](#version-and-defaults)
+- [Known boundaries](#known-boundaries)
 
 ## Repository
 
-- Name: `bcc-sim` (바카라 확률·이율 시뮬레이터)
-- Path: `/home/gbagent02/works/bcc_sim`
-- 목적: 실제 카드덱 기반 바카라 시뮬레이션으로 마틴게일(피벗 변형) 의 허구성을 시각·통계로 입증. 교육용.
+- 이름: `bcc-sim`
+- 로컬 경로: `C:\works\bcc_sim`
+- 원격 저장소: `gobackAILab/bcc_sim`
+- 기본 브랜치: `main`
+- 현재 제품 브랜치: `static-web` (독립 운영, 미병합)
+- 정적 웹 URL: <https://gobackailab.github.io/bcc_sim/>
+- 목적: 실제 카드 슈 기반 바카라를 재현하고 마틴게일 전략의 손실 위험을 라이브 진행과 통계로 보여주는 교육용 시뮬레이터
 
 ## Top-level structure
 
-- [main.py](../main.py) — CLI 엔트리포인트 (argparse, live/stats 모드)
-- [pyproject.toml](../pyproject.toml) — 프로젝트 메타, 의존성
-  - 런타임: `numpy`, `matplotlib`, `tqdm`, **`fastapi`, `uvicorn[standard]`**
-  - dev: `pytest`, **`httpx`** (FastAPI TestClient)
-- [readme.md](../readme.md) — 사용자 문서 (CLI 사용법 + 웹 섹션 요약)
-- [docs/web_guide.md](../docs/web_guide.md) — 웹 인터페이스 실행/접속/사용 상세 가이드
-- [.python-version](../.python-version) — `3` (uv 가 3.11+ 잡도록)
-- [.gitignore](../.gitignore) — `.venv`, `__pycache__`, build artifacts
-- `_forAI/` — AI 작업 문맥 (이 디렉터리)
-- `logs/` — CLI 라이브 모드 + PM2 (`pm2-out.log`, `pm2-err.log`) 세션 로그
-- `.venv/` — uv 가상환경
-- [ecosystem.config.cjs](../ecosystem.config.cjs) — PM2 ecosystem (port 21037, uv 절대경로 호출, `BCC_SIM_VERSION` 환경변수에 pyproject 버전 주입)
-- [pm2-start.sh](../pm2-start.sh) / [pm2-stop.sh](../pm2-stop.sh) — PM2 등록·기동·정지 헬퍼 스크립트
+| 경로 | 역할 |
+|---|---|
+| [main.py](../main.py) | Python CLI 엔트리포인트, `live`/`stats` 모드 |
+| [bcc_sim/](../bcc_sim) | Python 규칙·전략·세션 엔진과 FastAPI 웹 |
+| [tests/](../tests) | Python 코어 및 FastAPI/WebSocket 테스트 |
+| [web/](../web) | React/Vite/TypeScript 정적 웹 애플리케이션 |
+| [scripts/](../scripts) | Python 기준 fixture 생성기 |
+| [.github/workflows/deploy-pages.yml](../.github/workflows/deploy-pages.yml) | 정적 웹 검증 및 GitHub Pages 배포 |
+| [docs/web_guide.md](../docs/web_guide.md) | Python FastAPI 웹 사용 가이드; 정적 웹 가이드가 아님 |
+| [readme.md](../readme.md) | Python CLI/FastAPI 중심 사용자 문서 |
+| [web/README.md](../web/README.md) | 정적 웹 개발·검증·배포 문서 |
+| [pyproject.toml](../pyproject.toml) / [uv.lock](../uv.lock) | Python 패키지·의존성 잠금 |
+| [web/package.json](../web/package.json) / [web/pnpm-lock.yaml](../web/pnpm-lock.yaml) | 정적 웹 패키지·의존성 잠금 |
+| [ecosystem.config.cjs](../ecosystem.config.cjs) | Python FastAPI 웹의 PM2 운영 설정; Pages에는 사용하지 않음 |
+| `_forAI/` | AI 작업 문맥 표준 문서 세트 |
 
-## Source modules
+## Python implementation
+
+### Core
 
 | 파일 | 역할 |
-|------|------|
-| [bcc_sim/__init__.py](../bcc_sim/__init__.py) | `__version__` — `importlib.metadata` 우선, 실패 시 `tomllib` 로 `pyproject.toml` 직접 파싱 fallback |
-| [bcc_sim/deck.py](../bcc_sim/deck.py) | `Card` (rank·suit, `baccarat_value`, `__str__`), `Shoe` (8덱 무복원 셔플, 컷 오프셋, 시드 주입) |
-| [bcc_sim/baccarat.py](../bcc_sim/baccarat.py) | `Outcome` enum, `HandResult` (cards 포함), `play_hand` (Punto Banco 룰, 카드 수집) |
-| [bcc_sim/strategy.py](../bcc_sim/strategy.py) | `Strategy` Protocol, `FlatBet`, `Martingale` (pivot + martin_steps), `payout_won` |
-| [bcc_sim/session.py](../bcc_sim/session.py) | `SessionConfig`, `SessionResult`, `HandRecord`, `run_session`, `run_session_traced` |
-| [bcc_sim/runner.py](../bcc_sim/runner.py) | `ExperimentResult`, `run_experiment` (tqdm progress + live stats), `_derive_session_seeds` |
-| [bcc_sim/report.py](../bcc_sim/report.py) | ANSI 색, `format_banner`, `format_report`, `iter_live_session_lines`, `iter_session_trace_lines`, `LiveDashboard`, `write_session_log` |
-| [bcc_sim/web/__init__.py](../bcc_sim/web/__init__.py) | 웹 패키지 마커 |
-| [bcc_sim/web/__main__.py](../bcc_sim/web/__main__.py) | `python -m bcc_sim.web` 엔트리포인트 (uvicorn 기동, host/port/reload 옵션) |
-| [bcc_sim/web/server.py](../bcc_sim/web/server.py) | FastAPI app — `GET /`, `GET /api/defaults`, `GET /api/version`, `WS /ws/play`, `/static` mount |
-| [bcc_sim/web/session_runner.py](../bcc_sim/web/session_runner.py) | WebSocket 세션 루프 — 컨트롤(`start/pause/resume/next_session/stop`), 누적 P&L 추적, `run_session_traced` 재사용 |
-| [bcc_sim/web/serialize.py](../bcc_sim/web/serialize.py) | `Card / Outcome / HandRecord / SessionResult / SessionConfig` ↔ dict 변환 + `DEFAULT_CONFIG` (CLI 와 동기) |
-| [bcc_sim/web/static/index.html](../bcc_sim/web/static/index.html) | 2-frame 레이아웃 (좌 Settings / 우 Dashboard) + NES.css 클래스, 헤더에 `app-version` 배지, 통계 패널에 체감시간 2행 |
-| [bcc_sim/web/static/style.css](../bcc_sim/web/static/style.css) | NES.css 위에 픽셀 스타일 오버라이드 — 흰 배경, SNES 4버튼 컬러, IBM Plex Sans/Mono KR + Press Start 2P 폰트, 게이지/카드 픽셀 보더, 반응형 |
-| [bcc_sim/web/static/app.js](../bcc_sim/web/static/app.js) | WebSocket 클라이언트, 폼↔config, DOM 갱신, 컨트롤 버튼, 패널 토글, `/api/version` 헤더 표시, `SECONDS_PER_HAND=40` 체감시간 계산 (`fmtRealTime`, `state.cumulativeHands`) |
+|---|---|
+| [bcc_sim/deck.py](../bcc_sim/deck.py) | `Card`, 8덱 기본 `Shoe`, 무복원 셔플, 컷 오프셋 |
+| [bcc_sim/baccarat.py](../bcc_sim/baccarat.py) | Punto Banco 드로우 룰과 핸드 판정 |
+| [bcc_sim/strategy.py](../bcc_sim/strategy.py) | Flat/Martingale, pivot, Banker 95% 배당 |
+| [bcc_sim/session.py](../bcc_sim/session.py) | 세션 종료조건, `HandRecord`, traced 실행 |
+| [bcc_sim/runner.py](../bcc_sim/runner.py) | master seed에서 세션 seed 파생, 다중 세션 통계 |
+| [bcc_sim/report.py](../bcc_sim/report.py) | CLI 배너·대시보드·로그·리포트 포맷 |
+| [bcc_sim/__init__.py](../bcc_sim/__init__.py) | Python 패키지 버전 노출 |
 
-## Tests
+### Server web
 
-총 **81 테스트** 전체 통과. 7개 파일 (66 코어 + 15 웹).
+| 파일 | 역할 |
+|---|---|
+| [bcc_sim/web/__main__.py](../bcc_sim/web/__main__.py) | `python -m bcc_sim.web` 실행 |
+| [bcc_sim/web/server.py](../bcc_sim/web/server.py) | FastAPI routes, WebSocket, static mount |
+| [bcc_sim/web/session_runner.py](../bcc_sim/web/session_runner.py) | 서버 측 세션 실행과 컨트롤 처리 |
+| [bcc_sim/web/serialize.py](../bcc_sim/web/serialize.py) | Python 객체 ↔ JSON shape, 서버 웹 기본값 |
+| [bcc_sim/web/static/](../bcc_sim/web/static) | 서버형 Vanilla HTML/CSS/JS UI |
 
-| 파일 | 테스트 수 | 핵심 검증 |
-|------|---------|----------|
-| [tests/test_deck.py](../tests/test_deck.py) | 6 | 8덱=416장, 무복원, 결정론, 컷 리셔플 |
-| [tests/test_baccarat.py](../tests/test_baccarat.py) | 18 | 네추럴, Player/Banker 드로우 룰 전체 row, 100k 핸드 빈도 (P/B/T ±1%) |
-| [tests/test_strategy.py](../tests/test_strategy.py) | 21 | Classic martingale, pivot 시나리오 전체, Tie 보존, martin_steps 리셋, payout |
-| [tests/test_session.py](../tests/test_session.py) | 15 | 결정론, 4가지 RUIN 사유, Tie 보존, 피벗 통합, 22-핸드 사용자 트레이스 |
-| [tests/test_runner.py](../tests/test_runner.py) | 6 | 시드 분기 재현성, 집계 형식, flat-bet 이론 엣지 ±1% 수렴 |
-| [tests/test_web_serialize.py](../tests/test_web_serialize.py) | 9 | Card/Outcome/HandRecord/SessionConfig dict 라운드트립, 카드 라벨 (♠♥♦♣), CLI 기본값 동기 검증 |
-| [tests/test_web_server.py](../tests/test_web_server.py) | 6 | FastAPI TestClient — `/api/defaults`, `/`, WS 핸드 스트리밍, 잘못된 config 에러, 첫 액션 검증, session_end 도달 |
+## Static web implementation
+
+### Architecture
+
+```text
+React UI
+   ↕ typed postMessage
+Dedicated Web Worker
+   ↕ direct function calls
+TypeScript simulation core
+```
+
+### Files
+
+| 경로 | 역할 |
+|---|---|
+| [web/src/App.tsx](../web/src/App.tsx) | 설정 폼, 대시보드, 컨트롤, 최근 핸드 |
+| [web/src/hooks/useSimulation.ts](../web/src/hooks/useSimulation.ts) | Worker 수명주기와 React 상태 reducer |
+| [web/src/worker/protocol.ts](../web/src/worker/protocol.ts) | Worker command/event 단일 타입 정의 |
+| [web/src/worker/simulator.worker.ts](../web/src/worker/simulator.worker.ts) | 세션 seed 파생, 핸드별 실행, pause/resume/next/stop |
+| [web/src/sim/pythonRandom.ts](../web/src/sim/pythonRandom.ts) | CPython 3.11 정수 seed `random.Random` 호환 MT19937 |
+| [web/src/sim/baccarat.ts](../web/src/sim/baccarat.ts) | 카드·슈·Punto Banco 룰 |
+| [web/src/sim/strategy.ts](../web/src/sim/strategy.ts) | Flat/Martingale 전략과 배당 |
+| [web/src/sim/session.ts](../web/src/sim/session.ts) | 한 핸드 단위 `SessionStepper`와 traced 실행 |
+| [web/src/sim/types.ts](../web/src/sim/types.ts) | 설정·핸드·결과 타입과 정적 웹 기본값 |
+| [web/src/sim/validation.ts](../web/src/sim/validation.ts) | 관계 검증과 JavaScript safe-integer 경계 |
+| [web/vite.config.ts](../web/vite.config.ts) | `/bcc_sim/` base와 package version 주입 |
+
+정적 앱은 실행 중 `fetch`, WebSocket, Python 서버를 호출하지 않는다. 설정과 결과는 React/Worker 메모리에만 있고 새로고침 시 초기화된다.
+
+## Tests and parity fixtures
+
+### Python
+
+- 테스트 위치: [tests/](../tests)
+- 현재 기준: 7 files, 81 tests
+- 코어 66 + FastAPI/직렬화 15
+
+### TypeScript
+
+- 테스트 위치: `web/src/sim/*.test.ts`
+- 현재 기준: 6 files, 81 tests
+- 규칙·전략·세션·검증·RNG·Python end-to-end parity를 검증한다.
+
+### Fixtures
+
+| 파일 | 생성기 | 검증 대상 |
+|---|---|---|
+| [web/src/sim/fixtures/python-random.json](../web/src/sim/fixtures/python-random.json) | [scripts/generate_rng_fixture.py](../scripts/generate_rng_fixture.py) | CPython 3.11 RNG, state boundary, shuffle, `randrange(2**63)` |
+| [web/src/sim/fixtures/python-engine.json](../web/src/sim/fixtures/python-engine.json) | [scripts/generate_engine_fixture.py](../scripts/generate_engine_fixture.py) | 파생 seed, 전체 HandRecord, SessionResult |
 
 ## Build and validation commands
 
-```bash
-# 환경 동기화
+### Python
+
+```powershell
 uv sync
-
-# 테스트
-uv run pytest                # 전체 (~95초, 100k 핸드 빈도 + 500세션 엣지 수렴 테스트 때문)
-uv run pytest -q             # quiet
-uv run pytest -v             # verbose
-uv run pytest tests/test_strategy.py   # 특정 파일만
-
-# 의존성 추가
-uv add <pkg>                 # runtime
-uv add --dev <pkg>           # dev
-```
-
-## CLI usage
-
-### 라이브 모드 (기본 — 교육용)
-
-```bash
+uv run pytest -q
 uv run python main.py
-# 시작 배너 → 고정 대시보드 (게이지 in-place 갱신) → 세션 종료 → Enter (다음) / q (종료)
-# 로그는 ./logs/session_NNNN_seed-XXX.log 에 자동 저장
-```
-
-주요 옵션:
-- `--initial WON` `--target WON` `--ruin WON` `--table-max WON` `--base-bet WON` (정수 원)
-- `--martin-steps N` `--no-martin-limit` `--pivot/--no-pivot`
-- `--side {banker,player}` (primary 사이드, 기본 banker)
-- `--hand-delay SEC` (기본 0.3초)
-- `--auto` (Enter 대기 없이 자동 진행)
-- `--log-dir DIR` `--no-log` `--no-dashboard` `--no-color`
-- `--seed N`
-
-### 통계 모드
-
-```bash
 uv run python main.py --mode stats --sessions 10000
-# tqdm 진행률 바 (라이브 stats) → 마지막에 통계 표
+uv run python -m bcc_sim.web
 ```
 
-## Web usage
+### Static web
 
-### 기본 실행
-
-```bash
-uv run python -m bcc_sim.web                              # 127.0.0.1:8000
-uv run python -m bcc_sim.web --host 0.0.0.0 --port 8080   # LAN 공유 (경고 출력)
-uv run python -m bcc_sim.web --reload                     # 개발용 자동 reload
+```powershell
+cd web
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm check
+pnpm preview
 ```
 
-브라우저: <http://localhost:8000>
+`pnpm check`는 `oxlint .` → `vitest run` → `tsc -b && vite build` 순서로 실행한다. 산출물은 `web/dist/`이며 Git에서 제외된다.
 
-### 화면 / 기능
+### Fixture regeneration
 
-- 좌측 Settings 패널 (`«`로 접기) + 우측 Dashboard
-- Dashboard: 자본 게이지, 현재 자본 + 누적 P&L, 현재 핸드(P/B 카드 풀), 최근 12 핸드, 세션 통계 + 누계
-- 컨트롤: `▶ Apply & Start` / `⏸ Pause` / `▶ Resume` / `⏭ Next Session` / `⏹ Stop`
-- 옵션: CLI 와 모든 동일 옵션 노출 + `hand_delay_ms` (ms 단위), `auto_next` (= CLI `--auto`)
-- 결정론 동일성: 같은 seed + 같은 설정 → CLI 와 byte-identical 한 카드/결과/자본 시퀀스 (양쪽 `_derive_session_seeds` + `run_session_traced` 재사용)
+저장소 루트의 CPython 3.11 환경에서 실행한다.
 
-### 사용자 가이드
-
-상세 사용법은 [docs/web_guide.md](../docs/web_guide.md) 참조.
-
-### PM2 배포
-
-상시 운영은 PM2 로 관리한다 (포트 21037 고정).
-
-```bash
-./pm2-start.sh                                  # 또는 pm2 start ecosystem.config.cjs
-pm2 logs bcc-sim-web
-pm2 restart bcc-sim-web --update-env            # 버전 올렸을 때
-./pm2-stop.sh                                   # pm2 stop + delete
-pm2 save && pm2 startup                         # 부팅시 자동 기동 (1회만)
+```powershell
+uv run python scripts/generate_rng_fixture.py
+uv run python -m scripts.generate_engine_fixture
+cd web
+pnpm test
 ```
 
-- 접속: `http://localhost:21037`
-- PM2 status 의 `version` 컬럼은 외부 바이너리 script 한계로 `N/A` 가 정상. 버전 확인은 `curl /api/version` 또는 UI 헤더 배지.
-- ⚠ `pm2 kill` 은 daemon 전체를 죽이므로 다른 앱(dalus 등)도 함께 정지된다. `dump.pm2.bak` 으로 복구 가능하지만 사용 전 확인할 것.
+## Runtime and deployment
 
-### 버전 단일 출처
+### Python server web
 
-[pyproject.toml](../pyproject.toml) 의 `version` 한 곳을 source of truth 로 한다. 올리는 절차:
+```powershell
+uv run python -m bcc_sim.web                  # 127.0.0.1:8000
+uv run python -m bcc_sim.web --host 0.0.0.0 --port 8080
+```
 
-1. `pyproject.toml` 의 `version = "x.y.z"` 수정
-2. `pm2 restart bcc-sim-web --update-env` (또는 `./pm2-start.sh` 재실행)
-3. UI 헤더 배지·`/api/version`·`BCC_SIM_VERSION` env 모두 자동 반영
+Linux PM2 운영 자산은 포트 `21037`과 `pm2-start.sh`/`pm2-stop.sh`를 사용한다. 이 경로는 정적 Pages 배포와 독립이다.
 
-전파 경로:
-- `bcc_sim/__init__.py` → `importlib.metadata` 또는 `tomllib` 로 동적 로드
-- `bcc_sim/web/server.py` → `/api/version` 및 FastAPI `app.version`
-- `bcc_sim/web/static/app.js` → 헤더 배지 갱신
-- `ecosystem.config.cjs` → 정규식으로 pyproject 파싱 → `BCC_SIM_VERSION` env
+### GitHub Pages
 
-## Notes
+- workflow trigger: `static-web`의 `web/**` 또는 workflow 파일 변경, 수동 실행
+- runner: Ubuntu, Node.js 24, pnpm 11.1.0
+- pipeline: frozen install → `pnpm check` → Pages artifact upload → deploy
+- Pages build type: GitHub Actions
+- `github-pages` environment에서 `static-web` 브랜치를 배포 허용
+- 공개 URL: <https://gobackailab.github.io/bcc_sim/>
 
-- 모든 금액은 **정수 원 (KRW)**. Banker 커미션은 `(bet × 95) // 100` (분 원은 하우스 보관).
-- 마틴게일 기본 동작 = **Banker 우선 피벗** + 5번 더블링 (총 6베팅) 후 리셋. `--no-pivot` 으로 단방향 가능.
-- Tie 는 베팅 무효 (자본·시퀀스·사이드 모두 변화 없음).
-- 라이브 모드(CLI)는 ANSI 커서 제어 사용 → TTY 환경 필요. 비-TTY 자동 폴백 (스크롤).
-- 로그 파일은 ANSI 색 없는 plain text, grep 친화 형식.
-- max_hands 안전망 없음 → flat-bet 대용량 시나리오는 매우 오래 걸릴 수 있음 (사용자 의도적 결정).
-- 웹은 단일 사용자 가정 (다중 탭 가능하나 각 연결 독립, 서버 상태 공유 없음).
-- 웹 인증 없음 — 기본 127.0.0.1, `--host 0.0.0.0` 사용 시 경고 출력.
+## Version and defaults
+
+- Python version source: `pyproject.toml`의 `project.version`
+- 정적 웹 version source: `web/package.json`의 `version`
+- 두 값은 현재 모두 `0.1.0`이지만 자동으로 서로 연결되어 있지 않다.
+- Python 서버 웹 기본값: `bcc_sim/web/serialize.py::DEFAULT_CONFIG`
+- 정적 웹 기본값: `web/src/sim/types.ts::DEFAULT_CONFIG`
+- Python/정적 웹 기본값은 fixture와 parity test로 의미상 일치 여부를 확인한다.
+
+## Known boundaries
+
+- `main`에는 정적 웹 커밋이 병합되지 않았다.
+- 정적 웹은 live session UI만 제공하며 Python CLI의 대규모 stats 모드는 제공하지 않는다.
+- 정적 웹에는 결과 저장, 로그 다운로드, URL 공유 설정, PWA/offline cache가 없다.
+- GitHub Pages는 정적 파일만 서비스한다. Node/Vite/Python 프로세스는 배포 환경에서 실행되지 않는다.
+- root `readme.md`와 `docs/web_guide.md`의 “웹”은 Python FastAPI 구현을 가리킨다. 정적 웹은 `web/README.md`를 기준으로 한다.

@@ -2,230 +2,151 @@
 
 ## 목차
 
-- [제품 기준선](#제품-기준선)
-- [바카라 도메인 규칙](#바카라-도메인-규칙)
-  - [카드 가치](#카드-가치)
-  - [슈(Shoe) 구성](#슈shoe-구성)
-  - [드로우 룰 (Punto Banco / 일반 카지노 룰)](#드로우-룰-punto-banco--일반-카지노-룰)
-  - [베팅 배당 (이 프로젝트 확정 룰)](#베팅-배당-이-프로젝트-확정-룰)
-- [마틴게일 베팅 룰](#마틴게일-베팅-룰)
-  - [동작 (사용자 클리어)](#동작-사용자-클리어)
-  - [`martin_steps` 의미](#martin_steps-의미)
-  - [피벗 OFF (`--no-pivot`)](#피벗-off---no-pivot)
-  - [마틴게일이 망하는 이유](#마틴게일이-망하는-이유)
-- [기본 설정값 (CLI 디폴트, 원화)](#기본-설정값-cli-디폴트-원화)
-  - [베팅 시퀀스 예 (5-마틴 피벗, base 1,000원)](#베팅-시퀀스-예-5-마틴-피벗-base-1000원)
-- [런타임 구조 메모](#런타임-구조-메모)
-- [동작 규칙](#동작-규칙)
-- [라이브 모드 시각화](#라이브-모드-시각화)
-- [웹 인터페이스](#웹-인터페이스)
-- [버전 단일 출처 / PM2 배포](#버전-단일-출처--pm2-배포)
+- [제품 원칙](#제품-원칙)
+- [바카라 규칙](#바카라-규칙)
+- [마틴게일 규칙](#마틴게일-규칙)
+- [세션 종료 규칙](#세션-종료-규칙)
+- [기본 설정](#기본-설정)
+- [결정론과 Python 동등성](#결정론과-python-동등성)
+- [정적 웹 런타임 원칙](#정적-웹-런타임-원칙)
+- [Python 서버 웹 원칙](#python-서버-웹-원칙)
+- [버전과 문서 경계](#버전과-문서-경계)
 - [반복 금지](#반복-금지)
 
-## 제품 기준선
+## 제품 원칙
 
-- Python 3.11+, uv 패키지 관리.
-- **CLI 교육용 시뮬레이터** — 라이브 시각화(카드 딜링 + 게이지 바)가 1순위, 통계는 부차적.
-  - 사용자 결정: 통계로 "퉁치는" 게 아니라 실제 카드를 보여줘야 호소력이 있다.
-- 결정론적 재현(시드 지정) 지원이 기본 요구사항.
-- 두 모드: `live` (대시보드/스크롤), `stats` (집계 통계).
+- 목적은 도박 자동화가 아니라 마틴게일의 위험을 실제 카드 진행으로 보여주는 교육용 시뮬레이션이다.
+- 통계 수치만 제시하지 않고 카드, 베팅, 자본 변화를 핸드 단위로 보여준다.
+- 결과를 원하는 방향으로 맞추는 하드코딩을 금지한다. 모든 결과는 규칙 엔진과 seed에서 계산한다.
+- 동일한 설정과 seed는 재현 가능한 결과를 내야 한다.
+- Python은 기준 구현이고 TypeScript는 독립 실행 가능한 포트다. 정적 웹이 Python 서버를 원격 호출하는 구조가 아니다.
 
-## 바카라 도메인 규칙
+## 바카라 규칙
 
-### 카드 가치
-- A = 1
-- 2~9 = 액면 그대로
-- 10, J, Q, K = 0
-- 두 장 합산 후 **마지막 자리수만** 유효 (예: 7+8=15 → 5).
+### 카드와 슈
 
-### 슈(Shoe) 구성
-- 표준 카지노 바카라: 8 덱 = 416 장.
-- 한 슈를 끝까지 사용하지 않고 **컷 카드** 뒤(보통 14장 정도)부터 새 슈로 교체.
-- 시뮬레이터에선 일단 "슈 소진 시 새 슈" 로 단순화하되, `cut_card_offset` 파라미터로 확장 가능하게.
+- A=1, 2~9=액면, 10/J/Q/K=0이다.
+- 합계는 일의 자리만 사용한다.
+- 기본 슈는 8덱 416장이며 무복원으로 뽑는다.
+- 컷 오프셋 기본값은 14장이다. 컷 기준에 도달하면 새 슈를 셔플한다.
 
-### 드로우 룰 (Punto Banco / 일반 카지노 룰)
-- Player·Banker 각각 2장씩 받는다.
-- **Natural**: 어느 한쪽이 처음 2장 합이 8 또는 9 → 즉시 종료.
-- **Player 3rd card 룰**: Player 합이 0~5 → 한 장 더, 6~7 → 스탠드.
-- **Banker 3rd card 룰** (Player 가 스탠드한 경우): Banker 0~5 → 드로우, 6~7 → 스탠드.
-- **Banker 3rd card 룰** (Player 가 드로우한 경우, Player 의 3번째 카드 값에 따라 표):
-  - Banker 0~2: 무조건 드로우.
-  - Banker 3: Player 3rd card 가 8 이 아니면 드로우.
-  - Banker 4: Player 3rd card 가 2~7 이면 드로우.
-  - Banker 5: Player 3rd card 가 4~7 이면 드로우.
-  - Banker 6: Player 3rd card 가 6~7 이면 드로우.
-  - Banker 7: 스탠드.
+### Punto Banco 드로우
 
-### 베팅 배당 (이 프로젝트 확정 룰)
-- Player 적중: 1:1 (베팅 1 → 수익 +1).
-- Banker 적중: **0.95배 수익** (5% 커미션 적용, 베팅 1 → 수익 +0.95). **확정**.
-- Tie 결과: **베팅하지 않은 것으로 간주**. 자본 변화 없음, 베팅 시퀀스(마틴게일 카운터) **유지**(증가도 리셋도 안 함). **확정**.
-  - 즉 본 시뮬레이터는 "Tie 자체에 베팅하는 옵션" 을 제공하지 않는다. 베팅 대상은 Player 또는 Banker 만.
-- 이론적 하우스 엣지(참고): Banker ≈ 1.06%, Player ≈ 1.24%.
+- Player와 Banker가 각각 두 장을 받는다.
+- 어느 한쪽이 8 또는 9 natural이면 추가 카드를 뽑지 않는다.
+- Player 0~5 draw, 6~7 stand다.
+- Player가 stand하면 Banker 0~5 draw, 6~7 stand다.
+- Player가 draw하면 Banker는 표준 third-card table을 따른다.
+  - Banker 0~2: 항상 draw
+  - Banker 3: Player third card가 8이 아니면 draw
+  - Banker 4: Player third card가 2~7이면 draw
+  - Banker 5: Player third card가 4~7이면 draw
+  - Banker 6: Player third card가 6~7이면 draw
+  - Banker 7: stand
 
-## 마틴게일 베팅 룰
+### 배당과 Tie
 
-본 시뮬레이터의 마틴게일은 **"Banker 우선 피벗 + N번 더블링 리셋"** 방식. **확정**.
+- Player 적중 수익은 베팅액의 1배다.
+- Banker 적중 수익은 `(bet_won * 95) // 100`이다. 5% 커미션과 정수 floor를 유지한다.
+- Tie에는 배팅 수익·손실이 없다.
+- Tie는 마틴게일 승패 카운터, 현재 side, 손실 연속 수를 변경하지 않는다.
+- Tie 전용 베팅은 지원하지 않는다.
 
-### 동작 (사용자 클리어)
+## 마틴게일 규칙
 
-```
-1. base (예: 1,000원) 으로 Banker 베팅
-2. Banker 승 → Banker base 유지 (마틴 없음)
-3. Banker 패 → MARTIN START: Player 로 전환, 베팅 2배
-4. Player 베팅 결과:
-   - 승  → MARTIN END, Banker base 로 리셋
-   - 패  → 2배로 더블링, Player 사이드 유지
-   - Tie → 시퀀스·사이드·자본 모두 변화 없음 (베팅 무효)
-5. (martin_steps + 1)번째 누적 패배 → MARTIN END (포기), Banker base 로 리셋
-6. 위 과정을 자본이 목표(WIN) 또는 파산(RUIN) 에 도달할 때까지 반복
-```
+- 기본 primary side는 Banker다.
+- `pivot=true`에서 primary가 패하면 반대 side로 전환하고 마틴 구간이 끝날 때까지 유지한다.
+- 승리하면 즉시 base bet과 primary side로 돌아간다.
+- `martin_steps=N`은 N번 더블링을 허용한다는 뜻이다. 총 N+1번 베팅 후에도 패하면 give-up하고 base로 돌아간다.
+- 기본 `martin_steps=5`의 금액은 `1k → 2k → 4k → 8k → 16k → 32k`다.
+- `martin_steps=null`은 전략 레벨에서는 무한 더블링이지만 자본·테이블 상한 종료조건은 계속 적용된다.
+- `pivot=false`에서는 primary side를 바꾸지 않는 classic martingale이다.
+- flat 전략은 같은 금액과 side를 유지한다.
 
-### `martin_steps` 의미
+## 세션 종료 규칙
 
-- `martin_steps=N` = **N번 더블링 허용** (총 N+1 베팅이 시퀀스에 들어감)
-- 예: `martin_steps=5` → 베팅 시퀀스 `1k → 2k → 4k → 8k → 16k → 32k` (6 베팅), 6번째 패배 시 리셋
-- `martin_steps=None` 이면 무한 더블 (옛 마틴게일 방식, 테이블 상한·자본까지 도달)
+- `capital >= target_won`: `WIN`
+- `capital <= ruin_won`: `RUIN / capital_depleted`
+- 다음 베팅이 자본 초과: `RUIN / bet_exceeds_capital`
+- 다음 베팅이 테이블 상한 초과: `RUIN / bet_exceeds_table_max`
+- 두 조건 동시 초과: `RUIN / both`
+- `max_hands` 안전망은 없다. 이 결정은 Python과 TypeScript 모두 동일하다.
+- 한 세션은 독립된 seed와 슈 상태를 가진다.
+- master seed에서 세션 seed를 `random.Random(master).randrange(2**63)` 순서로 파생한다.
 
-### 피벗 OFF (`--no-pivot`)
+## 기본 설정
 
-피벗 비활성 시 한 사이드 (primary) 에만 베팅. 패배해도 사이드 전환 없음.
-구식 단방향 마틴게일과 같음.
+| 항목 | 값 |
+|---|---:|
+| initial | 100,000원 |
+| target | 500,000원 |
+| ruin | 50,000원 |
+| base bet | 1,000원 |
+| table max | 100,000원 |
+| strategy | martingale |
+| primary side | Banker |
+| martin steps | 5 |
+| pivot | true |
+| decks | 8 |
+| cut offset | 14 |
+| master seed | 42 |
+| browser hand delay | 50ms |
+| browser auto next | false |
 
-### 마틴게일이 망하는 이유
+Python CLI의 live delay 기본값은 초 단위 옵션이며 브라우저 playback 설정과 같은 필드가 아니다.
 
-- **장기 기대값은 음수** (하우스 엣지 -1.06% Banker / -1.24% Player).
-- **피벗이 오히려 더 안 좋음** — Player 사이드 엣지가 Banker 보다 큼 (1.24 > 1.06). 피벗 92.8% vs no-pivot 92.6% 파산률 (500세션).
-- **파산 확률은 자본 규모·베팅 상한에 따라 달라지지만 0이 아니다** — 5-마틴 100만원 자본에서도 93% 파산.
-- **N번 리셋은 파산을 느리게 할 뿐 막지 못한다** — 매 사이클 평균 손실은 여전히 음수.
-- **충분히 많은 세션 → 평균 손실은 하우스 엣지로 수렴**.
+## 결정론과 Python 동등성
 
-## 기본 설정값 (CLI 디폴트, 원화)
+정적 웹 포트의 신뢰성은 “비슷한 분포”가 아니라 record-level parity를 기준으로 한다.
 
-- 초기 자본: 100,000원 (10만원)
-- 기본 베팅: 1,000원 (1k)
-- 목표 자본 (WIN): 500,000원 (5배)
-- 파산 임계 자본 (RUIN): 50,000원 (절반 손실) — 또는 다음 베팅 불가
-- 테이블 상한: 100,000원
-- 마틴게일 더블링 횟수: 5 (6번째 패배 시 reset)
-- 피벗: ON (Banker 시작 → 패배 시 Player 전환)
-- 슈 구성: 8덱, 컷 오프셋 14장
-- 베팅 primary 사이드: Banker (가장 낮은 엣지 — 마틴게일에 가장 유리한 조건으로 잡고도 망함을 보여야 메시지가 산다)
-- 라이브 모드 핸드 지연: 0.3초
-- stats 모드 세션 수: 10,000
+- [pythonRandom.ts](../web/src/sim/pythonRandom.ts)는 CPython 3.11의 정수 seed 초기화와 MT19937 소비 순서를 재현한다.
+- fixture는 53-bit를 넘는 양수·음수 seed, `getrandbits`, state boundary, `random`, `randrange`, shuffle을 포함한다.
+- engine fixture는 파생 session seed, config, 모든 `HandRecord`, 최종 `SessionResult`를 저장한다.
+- TypeScript 필드 shape는 Python `bcc_sim.web.serialize`의 snake_case JSON shape와 맞춘다.
+- 규칙·RNG·seed 파생·직렬화가 바뀌면 fixture를 CPython 3.11에서 재생성해야 한다.
+- fixture JSON은 테스트 기준 데이터다. UI 결과를 만들기 위한 런타임 데이터로 사용하지 않는다.
+- `Math.random()`으로 대체하지 않는다.
 
-### 베팅 시퀀스 예 (5-마틴 피벗, base 1,000원)
+## 정적 웹 런타임 원칙
 
-```
-Banker 1k 패배 → Player 2k 패배 → Player 4k → Player 8k → Player 16k → Player 32k (6번째)
-→ 6번째 패배 시 Banker 1k 로 리셋
-```
+- React는 입력과 표시만 담당하고 시뮬레이션 계산은 Dedicated Web Worker에서 수행한다.
+- Worker와 UI는 [protocol.ts](../web/src/worker/protocol.ts)의 typed command/event로만 통신한다.
+- Worker는 핸드 하나씩 `SessionStepper.step()`을 호출하므로 pause/stop이 실제 계산 경계에서 작동한다.
+- `pause`는 다음 핸드 전에 멈추며 이미 전송된 핸드는 취소하지 않는다.
+- `next_session`은 `auto_next=false`의 세션 종료 대기 상태를 해제한다.
+- 설정 검증은 [validation.ts](../web/src/sim/validation.ts)를 단일 출처로 사용한다.
+- 금액은 UI 편의를 위해 `number`지만 모든 연산 입력·결과가 JavaScript safe integer인지 검사한다.
+- 정적 웹은 서버 API, WebSocket, 인증, 저장소를 사용하지 않는다.
+- `web/dist/`는 빌드 산출물이며 커밋하지 않는다.
 
-연속 패배 시 한 사이클 손실 = 1k + 2k + 4k + 8k + 16k + 32k = 63k. 10만 원 자본 ÷ 63k ≈ 1.6 사이클 분량.
-사이클 도중 승리 확률이 있어 평균은 더 길지만, -1.0% 엣지 누적으로 결국 파산.
+## Python 서버 웹 원칙
 
-## 런타임 구조 메모
+- `bcc_sim/web/`은 FastAPI + WebSocket 기반의 별도 서버형 UI다.
+- Python 코어를 직접 재사용하므로 Python CLI와 구조적으로 같은 세션 엔진을 호출한다.
+- pause/resume/next/stop 메시지 처리를 위해 `asyncio.sleep(0)`도 생략하지 않는다.
+- 서버 웹의 `DEFAULT_CONFIG`를 바꾸면 CLI 기본값과 테스트를 함께 확인한다.
+- PM2 설정과 포트 21037은 이 서버형 구현에만 해당한다.
+- Pages 배포를 위해 FastAPI 서버나 PM2를 사용하지 않는다.
 
-- 한 "세션" = 시드 1개로 자본이 목표 또는 파산에 도달할 때까지 베팅을 반복.
-- 한 "실험" = N개 세션을 돌려 승률/평균 자본/평균 베팅 수/최대 연속 패배 등을 집계.
-- 시드 관리: 실험 시드 → 세션별 시드 파생 (재현성).
-- 슈는 세션 내부 상태 (세션 간에 슈를 공유하지 않는다).
+## 버전과 문서 경계
 
-## 동작 규칙
-
-- **라이브가 기본**, 통계는 보조. `--mode live` 가 default, `--mode stats` 로 통계 전환.
-- 모든 확률·이율은 시뮬레이션 결과로 보여야 하며, 하드코딩된 이론값과 **나란히** 출력해 비교 가능하게.
-- 마틴게일 외에 추가 전략(파롤리, 피보나치)도 같은 인터페이스로 끼울 수 있게 `Strategy` Protocol 유지.
-- `Strategy.side` 는 **property** — 매 핸드 동적으로 변경 가능 (피벗 지원).
-- Session 은 매 베팅 직전 `bet_side = strategy.side` 캡처 → payout·streak 계산에 사용.
-- 라이브 대시보드는 TTY 만 지원, 비-TTY 는 스크롤 폴백.
-- 매 세션 로그 파일은 ANSI 없는 plain text (grep 친화).
-
-## 라이브 모드 시각화
-
-- **고정 게이지 바**: ANSI 커서 제어 (`\033[H`, `\033[K`) 로 in-place 갱신. 스크롤하지 않음.
-- 게이지: 파산 ←→ 목표 사이 자본 위치. `│` 마커 = 시작 자본 위치.
-- 색: 자본 ≥ 시작 = green, < 시작 = red.
-- 매 핸드 표시: 베팅 (사이드·금액·마틴 이벤트), P/B 카드 + 토탈, 결과 + W/L/T, 자본 변화.
-- 카드: `Card.__str__` 로 `7♠`, `A♣`, `K♦` 표기.
-
-## 웹 인터페이스
-
-CLI 와 거의 같은 화면을 브라우저에서 제공. 사용자 문서 [docs/web_guide.md](../docs/web_guide.md) 가 한 곳에 정리되어 있음.
-
-### 설계 결정
-
-- **프레임워크**: FastAPI + uvicorn. async + WebSocket 네이티브가 결정 요인 (pause/resume/next/stop 양방향 컨트롤 필요 → SSE 가 아닌 WebSocket).
-- **프론트**: Vanilla HTML/CSS/JS. 빌드 도구 없이 `bcc_sim/web/static/` 한 폴더 — 디자인 수정은 그 자리에서.
-- **CLI 와 결정론 동일성**: 양쪽 모두 `_derive_session_seeds` + `run_session_traced` 호출. 같은 seed + 같은 설정 → byte-identical.
-- **history 사전 계산 후 스트리밍**: `run_session_traced` 가 history 를 다 만든 뒤 `asyncio.sleep(delay)` 로 한 핸드씩 전송. CLI `_animate_session_dashboard` 와 같은 패턴.
-- **CLI 와 공존, `--mode web` 없음**: 의존성·기동방식이 다르므로 별도 엔트리 (`python -m bcc_sim.web`).
-- **단일 사용자 가정**: 인증 없음, 기본 127.0.0.1. `--host 0.0.0.0` 시 경고만 출력.
-
-### 컨트롤 (WebSocket actions)
-
-| Client → Server | 의미 |
-|------|------|
-| `start` | 첫 메시지, config 포함 |
-| `pause` | 다음 핸드 전송 중지 (현재 핸드는 이미 전송됨) |
-| `resume` | 일시정지 해제 |
-| `next_session` | `auto_next=false` 일 때 세션 종료 후 다음 세션 시작 |
-| `stop` | WebSocket 종료 |
-
-| Server → Client | 의미 |
-|------|------|
-| `banner` | 시작 시 1회 — 정규화된 config |
-| `session_start` | 세션마다 — session_num, derived seed |
-| `hand` | 매 핸드 — HandRecord dict (Card 포함) |
-| `session_end` | 세션 종료 — result + session_pnl + cumulative |
-| `error` | validation 실패 또는 첫 액션 오류 |
-
-### 누적 P&L
-
-세션 간 누적은 **서버 측에서** 집계 (`cumulative.pnl`), `session_end` 에 담아 전송. 프론트는 화면 표시만 담당. 옵션 바꿔 재시작 시 누적도 0 으로 리셋.
-
-### 카드 색 (♥♦ red)
-
-`<span class="card red">` vs `<span class="card">`. CSS `font-variant-emoji: text` 로 모바일에서 이모지 그림 렌더 방지.
-
-## 버전 단일 출처 / PM2 배포
-
-**단일 출처**: [pyproject.toml](../pyproject.toml) 의 `version`. 한 번만 수정하면 아래 4곳에 자동 전파:
-
-| 소비처 | 경로 | 메커니즘 |
-|------|------|---------|
-| Python | `bcc_sim.__version__` | `importlib.metadata.version("bcc-sim")` → 실패 시 `tomllib` 로 pyproject 직접 파싱 |
-| 웹 API | `GET /api/version` | `from .. import __version__` |
-| 웹 UI | 헤더 `app-version` 배지 | `fetch("/api/version")` |
-| PM2 env | `BCC_SIM_VERSION` | `ecosystem.config.cjs` 가 정규식으로 pyproject 파싱 |
-
-**PM2 status `version` 컬럼**: 외부 바이너리를 script 로 쓸 때 (`script: "/path/to/uv"`) PM2 가 cwd 의 `package.json` 을 자동 인식 못 함 → `N/A` 표시는 정상. dalus_server 처럼 `.js` script 일 때만 자동 표시되는 PM2 자체 동작.
-
-**배포 절차** (포트 21037):
-
-```bash
-./pm2-start.sh                           # pm2 start ecosystem.config.cjs + pm2 save
-pm2 restart bcc-sim-web --update-env     # 버전/설정 갱신 후
-./pm2-stop.sh                            # 정지
-```
-
-로그: `logs/pm2-out.log`, `logs/pm2-err.log`.
+- Python 버전은 `pyproject.toml`이 기준이다.
+- 정적 웹 버전은 `web/package.json`이 기준이다.
+- 현재 둘 다 `0.1.0`이지만 자동 동기화되지 않는다. 릴리스 정책이 정해지기 전까지 동일해야 한다고 가정하지 않는다.
+- root `readme.md`와 `docs/web_guide.md`는 Python CLI/FastAPI 문서다.
+- 정적 웹의 실행·배포 문서는 `web/README.md`다.
+- `static-web`은 `main`과 성격이 다른 독립 브랜치다. 사용자 승인 전 병합하거나 PR을 ready로 전환하지 않는다.
 
 ## 반복 금지
 
-- 카드 인출을 **복원 추출**(매번 무작위 카드)로 구현하지 말 것. 슈 단위 무복원이어야 시뮬레이션의 신뢰성이 산다 — 사용자가 명시한 핵심 요구사항.
-- "마틴게일은 수학적으로 망한다" 만 코드 주석으로 박지 말고, 시뮬레이션 결과 출력으로 입증할 것 (라이브 모드가 핵심).
-- 베팅 결과 계산에서 Banker 커미션(0.95배) 빠뜨리지 말 것 — 빠뜨리면 하우스 엣지가 왜곡됨.
-- Tie 발생을 마틴게일의 "패배" 로 처리하지 말 것. 베팅 자체가 없었던 것으로 간주 → 자본·시퀀스 모두 변화 없음.
-- 피벗 모드에서 `strategy.side` 를 instance attribute 로 저장하지 말 것. 반드시 property — `Strategy` Protocol 호환을 위해.
-- `HandResult.player_cards/banker_cards` 는 `compare=False` 유지. 동등성 비교 깨지면 기존 테스트 다 깨짐.
-- 라이브 모드에 추가하는 print 는 ANSI 색 코드 있을 수 있으니, 로그 파일에는 `write_session_log` (색 제거 plain) 사용.
-- 웹 `DEFAULT_CONFIG` ([bcc_sim/web/serialize.py](../bcc_sim/web/serialize.py)) 는 CLI `main.py` 기본값과 **수동으로 동기화** 필요. 한쪽 변경 시 양쪽 다 갱신. `test_default_config_matches_cli_defaults` 가 일부 가드.
-- 웹 session_runner 에서 `asyncio.sleep(delay)` 는 `delay=0` 이어도 **항상 호출** — 그래야 control reader task 가 핸드 사이에 메시지를 처리할 기회를 얻는다. 조건부 (`if delay > 0:`) 로 만들면 pause/stop 이 안 먹힘.
-- 웹 프론트의 폼은 새 옵션 추가 시 `index.html` + `app.js readConfig` + `DEFAULT_CONFIG` 세 군데 동기 필요.
-- 웹 인터페이스는 CLI 의 `--mode` 에 통합하지 말 것 — 의존성(uvicorn) 과 기동방식이 달라 별도 엔트리 (`python -m bcc_sim.web`) 유지. 사용자 합의된 분리.
-- `<input type="number">` 에 `min` 과 `step` 을 같이 줄 때는 **`min` 이 `step` 의 배수의 시작점** 이 되도록 맞출 것. 예) `min="1" step="1000"` 은 `1, 1001, 2001, …` 만 유효해서 `100000` 같은 디폴트 값이 브라우저 검증에서 거부됨. 가능하면 step 을 생략하거나 `min="0"` 사용.
-- 웹 폼 자체 검증 메시지("가장 근접한 유효 값 X / Y") 가 뜨면 서버 검증이 아니라 HTML5 native validation 임을 먼저 의심.
-- 버전을 여러 곳에 하드코딩하지 말 것. `pyproject.toml` 단일 출처를 유지하고, Python 은 `bcc_sim.__version__`, 프론트는 `/api/version`, ecosystem 은 `BCC_SIM_VERSION` env 로 받는다.
-- PM2 status 의 `version` 컬럼을 표시하려고 Node wrapper(`run.cjs`)를 만들지 말 것. 외부 바이너리(`uv`)를 직접 script 로 쓸 때 컬럼이 N/A 인 건 PM2 한계이고, 우회를 위해 wrapper 를 둘 만큼 이득이 없다고 사용자 판단함. UI/API/env 에 버전 노출이면 충분.
-- `pm2 kill` / `pm2 delete all` 같은 daemon 전체 영향 명령은 **사전 확인 없이 실행 금지**. 다른 앱(dalus, dap3d 등)이 같이 죽는다. 복구는 `/home/agent01/.pm2/dump.pm2.bak` → `cp ... dump.pm2 && pm2 resurrect` 가능하지만 사고 자체를 피할 것.
+- 카드 추출을 복원 추출이나 `Math.random()`으로 단순화하지 않는다.
+- Banker 커미션 floor와 Tie 상태 보존을 누락하지 않는다.
+- 마틴게일 결과나 seed별 결과를 UI에 하드코딩하지 않는다.
+- Python과 TypeScript의 RNG 호출 순서를 임의로 바꾸지 않는다.
+- fixture가 실패할 때 기대 JSON만 고쳐 통과시키지 않는다. Python 기준과 구현 차이를 먼저 조사한다.
+- Worker 계산을 React 메인 스레드로 옮기지 않는다.
+- 정적 웹에 불필요한 백엔드 호출을 추가하지 않는다.
+- 서버 웹과 정적 웹의 실행법·기본값·배포법을 한 구현처럼 섞어 쓰지 않는다.
+- `web/vite.config.ts`의 `/bcc_sim/` base를 저장소명 확인 없이 바꾸지 않는다.
+- `pm2 kill` 또는 `pm2 delete all`처럼 다른 앱까지 영향을 주는 명령을 사전 승인 없이 실행하지 않는다.
+- `_forAI` 문서는 코드 작업의 부수 효과로 자동 수정하지 않는다.
